@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ---------Scroll Bar-------- */
+
+.shidden::-webkit-scrollbar {
+  display: none;
+}
+
+*::-webkit-scrollbar-thumb {
+  width: 0.1rem;
+  background: orangered;
+  border-radius: 1rem;
+}
+*::-webkit-scrollbar {
+  width: 0.2rem;
+  border-radius: 1rem;
+}
+*::-webkit-scrollbar-track {
+  background: rgba(255, 55, 0, 0.364);
+  border-radius: 1rem;
+}
+
+.tgradient {
+  background: linear-gradient(to right, rgb(244, 85, 0), #ff9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.bgGradient {
+  background: linear-gradient(to right, rgb(244, 85, 0), #ff9500);
+}
+
+/* Input Number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Input Fields */
+.inputBox {
+  width: 100%;
+  position: relative;
+}
+.inputBox > input,
+.inputBox > textarea {
+  width: 100%;
+  height: 3rem;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #000;
+  cursor: pointer;
+  outline: none;
+  border-radius: 0.3rem;
+  padding: 10px;
+  overflow: none;
+  resize: none;
+}
+.inputBox > textarea {
+  height: 6rem;
+}
+
+.inputBox > span {
+  position: absolute;
+  left: 0;
+  padding: 12px;
+  pointer-events: none;
+  font-size: 1rem;
+  color: #888;
+  transition: 0.3s;
+}
+.inputBox > input:valid ~ span,
+.inputBox > textarea:valid ~ span,
+.inputBox > input:focus ~ span,
+inputBox > textarea:focus ~ span {
+  color: #000;
+  transform: translateX(10px) translateY(-6px);
+  font-size: 0.8rem;
+  padding: 0 7px;
+  background: #fff;
+  border-left: 2px solid #000;
+  border-right: 2px solid #000;
+}
+.inputBox > input:valid,
+.inputBox > input:focus {
+  border: 2px solid rgb(0, 0, 0);
+}
+/* ------------ */
+.epr_346qu6 {
+  display: none !important;
+}
+
+.epr_-kg0voo {
+  display: none !important;
+}
+
+aside,
+element.style {
+  height: 310px !important;
+  width: 300px !important;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELearning Activation Email</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { 
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            color: #666;
+        }
+
+        .button {
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            background-color: #0073ff;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 style="text-align: center ; padding: .8rem 1rem ; width: 100%; background: rgb(0, 123, 255); color: #fff; border-radius: .5rem;">Welcome to Our Socialface plateform!</h1>
+        <h2>Dear <%= user.name %></h2>
+        <p>Thank you for joining our community! To activate your account, click the button below:</p>
+        <!-- <a class="button" href="mailto:msalmansadiq121@gmail.com">Activate Your Account</a> -->
+        <p>If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
+        <b> Account activation code: <%= activationCode %></b>
+        <p>This activation link will expire in 5 mints for security reasons.</p>
+        <p>If you did not sign up for our service, please ignore this email.</p>
+        <p>If you have any questions, please don't hesitate to contact us at <a class="button" href="#" style="color: white; ">support@Socialface</a>  </p>
+        <div class="footer">
+            <p>Best regards,<br> The Socialface plateform Team.</p>
+        </div>
+    </div>
+</body>
+
+</html>
