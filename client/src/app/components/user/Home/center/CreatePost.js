@@ -159,7 +159,7 @@ export default function CreatePost({ getAllPost }) {
   //
 
   return (
-    <div className="px-4 sm:px-[2rem] relative ">
+    <div className=" px-2 sm:px-[2rem] relative ">
       <div className="w-full rounded-lg shadow-md bg-white border dark:border-gray-700 py-4 px-3 flex flex-col gap-4 dark:bg-gray-800">
         <div className="flex items-center gap-2">
           <div className="w-[3.2rem] h-[3.2rem]">

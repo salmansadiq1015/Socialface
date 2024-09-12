@@ -67,13 +67,13 @@ const Posts = ({ user, loading, posts, getAllPost }) => {
   useEffect(() => {
     setPostLikes(
       posts.reduce((acc, post) => {
-        acc[post._id] = post.likes.includes(user?._id);
+        acc[post._id] = post?.likes?.includes(user?._id);
         return acc;
       }, {})
     );
     setLikeCounts(
       posts.reduce((acc, post) => {
-        acc[post._id] = post.likes.length;
+        acc[post._id] = post?.likes?.length;
         return acc;
       }, {})
     );
@@ -272,13 +272,13 @@ const Posts = ({ user, loading, posts, getAllPost }) => {
   useEffect(() => {
     setCommentLikes(
       commentData.reduce((acc, comment) => {
-        acc[comment._id] = comment.likes.includes(auth.user._id);
+        acc[comment._id] = comment?.likes?.includes(auth.user._id);
         return acc;
       }, {})
     );
     setCommentLikeCounts(
       commentData.reduce((acc, comment) => {
-        acc[comment._id] = comment.likes.length;
+        acc[comment._id] = comment?.likes?.length;
         return acc;
       }, {})
     );
@@ -486,8 +486,8 @@ const Posts = ({ user, loading, posts, getAllPost }) => {
                 <p className="text-[15px] font-normal">
                   {showMore && post?._id === postId
                     ? post?.content
-                    : post?.content.slice(0, 120)}
-                  {post?.content.length > 120 && (
+                    : post?.content?.slice(0, 120)}
+                  {post?.content?.length > 120 && (
                     <span
                       className="font-medium cursor-pointer ml-2 text-orange-500 hover:border-b-[.1rem] border-orange-600"
                       onClick={() => {
@@ -501,7 +501,7 @@ const Posts = ({ user, loading, posts, getAllPost }) => {
               </div>
               {/* video/image */}
               <div
-                className="relative w-full h-[19rem] bg-gray-100 dark:bg-gray-700 cursor-pointer"
+                className="relative w-full h-[22rem] bg-gray-100 dark:bg-gray-700 cursor-pointer"
                 onClick={() => router.push(`/postDetail/${post._id}`)}
               >
                 {post.mediaType === "Image" ? (

@@ -172,7 +172,7 @@ export default function Register({ setActive }) {
 
             <div className="relative w-full">
               <span
-                className="absolute top-[.7rem] right-2   z-10  "
+                className="absolute top-[.7rem] right-2 cursor-pointer  z-10  "
                 onClick={() => setShow(!show)}
               >
                 {!show ? (

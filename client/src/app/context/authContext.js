@@ -11,6 +11,9 @@ const AuthProvider = ({ children }) => {
     token: "",
   });
   const [isActive, setIsActive] = useState(1);
+  const [user, setUser] = useState(null);
+  const [allContacts, setAllContacts] = useState([]);
+  const [userLoad, setUserLoad] = useState(false);
 
   // check token
   axios.defaults.headers.common["Authorization"] = auth?.token;
@@ -28,6 +31,32 @@ const AuthProvider = ({ children }) => {
       }));
     }
   }, []);
+
+  // ----------Get All Users-----------
+  // Get ALl Users/Contacts
+  const getAllUsers = async () => {
+    setUserLoad(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/user/all/contactlist`
+      );
+      setAllContacts(data?.users);
+      setUserLoad(false);
+    } catch (error) {
+      console.log(error);
+      setUserLoad(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    const currentUser = allContacts.filter((u) => u._id === auth?.user?._id);
+    setUser(...currentUser);
+  }, [allContacts, auth]);
   return (
     <AuthContext.Provider
       value={{
@@ -37,6 +66,10 @@ const AuthProvider = ({ children }) => {
         setAuth,
         isActive,
         setIsActive,
+        user,
+        allContacts,
+        userLoad,
+        getAllUsers,
       }}
     >
       {children}

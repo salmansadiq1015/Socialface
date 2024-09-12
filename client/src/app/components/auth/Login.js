@@ -71,7 +71,7 @@ export default function Login({ setActive }) {
 
             <div className="relative w-full">
               <span
-                className="absolute top-[.7rem] right-2   z-10  "
+                className="absolute top-[.7rem] right-2   z-10  cursor-pointer "
                 onClick={() => setShow(!show)}
               >
                 {!show ? (

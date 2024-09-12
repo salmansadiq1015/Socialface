@@ -77,7 +77,7 @@ export default function Verification({ setActive }) {
               invalidError ? "bg-red-600 animate-pulse" : "bg-sky-600"
             } flex items-center justify-center`}
           >
-            <VscWorkspaceTrusted size={40} className="text-white" />
+            <VscWorkspaceTrusted size={40} className="text-white " />
           </div>
         </div>
         <br />
@@ -88,8 +88,10 @@ export default function Verification({ setActive }) {
               type="number"
               key={key}
               ref={inputRefs[index]}
-              className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-md flex items-center text-black justify-center text-[18px]  font-Poppins outline-none text-center ${
-                invalidError ? " shake border-red-600" : " border-gray-900"
+              className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-md flex items-center text-black dark:text-white justify-center text-[18px]  font-Poppins outline-none text-center ${
+                invalidError
+                  ? " shake border-red-600"
+                  : " border-gray-900 dark:border-gray-50 "
               }`}
               placeholder=""
               maxLength={1}
@@ -116,7 +118,7 @@ export default function Verification({ setActive }) {
           </button>
         </div>
         <br />
-        <h5 className="text-center font-[16px] text-black mt-2 font-Poppins">
+        <h5 className="text-center font-[16px] text-black dark:text-white mt-2 font-Poppins">
           Go back to sign in?{" "}
           <span
             className="text-orange-500 hover:text-orange-600 cursor-pointer pl-2 font-semibold"

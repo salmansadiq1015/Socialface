@@ -8,11 +8,19 @@ import CreatePost from "./components/user/Home/center/CreatePost";
 import Posts from "./components/user/Home/center/Posts";
 import toast from "react-hot-toast";
 import axios from "axios";
+import Sponsored from "./components/user/Home/right/Sponsored";
+import ContactsList from "./components/user/Home/right/ContactsList";
+import FriendList from "./components/user/Home/right/FriendList";
+import HomeLeftSide from "./components/user/Home/Left/HomeLeftSide";
 
 export default function Home() {
   const { auth, isActive, setIsActive } = useAuth();
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [contactList, setContactList] = useState([]);
+  const [friendsList, setFrientsList] = useState([]);
+  const [loadUsers, setLoadUsers] = useState(false);
+  const [loadFriends, setLoadFriends] = useState(false);
 
   useEffect(() => {
     setIsActive(1);
@@ -39,13 +47,34 @@ export default function Home() {
   useEffect(() => {
     getAllPost();
   }, []);
+
+  // Get ALl Users/Contacts
+  const getAllUsers = async () => {
+    setLoadUsers(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/user/all/contactlist`
+      );
+      setContactList(data?.users);
+      setLoadUsers(false);
+    } catch (error) {
+      setLoadUsers(false);
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+  }, []);
+
   return (
     <UserLayout title="SocialFace - Home">
       <div className="w-full h-full min-h-screen bg-white dark:bg-gray-950 overflow-hidden">
         <div class="flex flex-1">
           {/* <!-- Left Column --> */}
           <div class="w-full md:w-1/2 lg:w-1/2 xl:w-1/2  hidden lg:block">
-            {/* <div class="bg-gray-200 p-4 h-32">Left Content</div> */}
+            <HomeLeftSide />
           </div>
 
           {/* <!-- Center Column --> */}
@@ -68,8 +97,22 @@ export default function Home() {
           </div>
 
           {/* <!-- Right Column --> */}
-          <div class="w-full md:w-1/2 lg:w-1/2 xl:w-1/2 hidden md:block">
-            {/* <div class="bg-gray-400 p-4 h-32">Right Content</div> */}
+          <div class=" w-full md:w-1/2 lg:w-1/2 xl:w-1/2 hidden md:block px-2 py-2">
+            <div className=" flex flex-col gap-4 w-full  h-screen overflow-y-auto">
+              <Sponsored />
+              {/* <hr className="w-full h-[1px] bg-gray-300 dark:bg-gray-800 my-1" /> */}
+              <FriendList
+                friendsList={contactList}
+                loadFriends={loadUsers}
+                getAllContactUsers={getAllUsers}
+              />
+              {/* <hr className="w-full bg-gray-200 dark:bg-gray-800 my-1" /> */}
+              <ContactsList
+                loadUsers={loadUsers}
+                contactList={contactList}
+                getAllContactUsers={getAllUsers}
+              />
+            </div>
           </div>
         </div>
       </div>

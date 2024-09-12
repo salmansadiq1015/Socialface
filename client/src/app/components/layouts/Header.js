@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -50,6 +50,8 @@ import ThemeSwitcher from "@/app/utils/ThemeSwitcher";
 import toast from "react-hot-toast";
 import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/navigation";
+import { MdOndemandVideo } from "react-icons/md";
+import { HiUserGroup } from "react-icons/hi2";
 
 // const products = [
 //   {
@@ -91,9 +93,10 @@ const callsToAction = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [buy, setBuy] = useState("false");
-  const { auth, setAuth, isActive, setIsActive } = useAuth();
+  const { auth, user, setAuth, isActive, setIsActive } = useAuth();
   const [show, setShow] = useState(false);
   const router = useRouter();
+  const headerManu = useRef(null);
 
   const handleLogout = () => {
     router.push("/authentication");
@@ -101,6 +104,18 @@ export default function Header() {
     setAuth({ ...auth, user: null, token: "" });
     toast.success("Logout successfully!");
   };
+
+  // Close Timer Status to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (headerManu.current && !headerManu.current.contains(event.target)) {
+        setShow(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   return (
     <header className="  bg-gray-100 dark:bg-black fixed top-0 left-0 w-full z-[999] border-b border-gray-200 dark:border-gray-400">
       <nav
@@ -330,38 +345,39 @@ export default function Header() {
                 }}
               >
                 <Image
-                  src={
-                    auth && auth?.user
-                      ? auth?.user?.profilePicture
-                      : "/profile.png"
-                  }
+                  src={user ? user?.profilePicture : auth?.user?.profilePicture}
                   alt=""
-                  fill
+                  layout="fill"
                   className="w-full h-full"
                 />
               </div>
               {/* Side POPUp */}
               {show && (
-                <div className="fixed hidden sm:block  top-[4rem] border right-[1rem] w-[22rem] rounded-md shadow-md py-4 px-4 bg-gray-100 dark:bg-gray-900 z-[99]">
+                <div
+                  ref={headerManu}
+                  className="fixed hidden sm:block  top-[4rem] border right-[1rem] w-[22rem] rounded-md shadow-md py-4 px-4 bg-gray-100 dark:bg-gray-900 z-[99]"
+                >
                   <Link
-                    href={"/profile"}
+                    href={`/profile/${auth?.user?._id}`}
                     className=" cursor-pointer w-full py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 bg-white dark:bg-gray-800  mt-2 flex items-center gap-2"
                   >
                     <div className="relative w-[3rem] h-[3rem] rounded-full border-[2px] border-orange-600 cursor-pointer overflow-hidden ">
                       <Image
                         src={
-                          auth && auth?.user
-                            ? auth?.user?.profilePicture
-                            : "/profile.png"
+                          user
+                            ? user?.profilePicture
+                            : auth?.user?.profilePicture
                         }
                         alt="Avatar"
-                        fill
+                        layout="fill"
                         className="h-8 w-full "
                       />
                     </div>
                     <div className="flex flex-col">
                       <h4 className="text-[17px] font-medium">
-                        {auth?.user?.firstName + " " + auth?.user?.lastName}
+                        {user
+                          ? user?.firstName + " " + user?.lastName
+                          : auth?.user?.firstName + " " + auth?.user?.lastName}
                       </h4>
                       <span className="text-[16px] text-gray-600 dark:text-gray-200">
                         View your profile
@@ -457,19 +473,17 @@ export default function Header() {
           >
             <div className="relative w-[3rem] h-[3rem] rounded-full border-[2px] border-orange-600 cursor-pointer overflow-hidden ">
               <Image
-                src={
-                  auth && auth?.user
-                    ? auth?.user?.profilePicture
-                    : "/profile.png"
-                }
+                src={user ? user?.profilePicture : auth?.user?.profilePicture}
                 alt="Avatar"
-                fill
+                layout="fill"
                 className="h-8 w-full "
               />
             </div>
             <div className="flex flex-col">
-              <h4 className="text-[17px] font-medium ">
-                {auth?.user?.firstName + " " + auth?.user?.lastName}
+              <h4 className="text-[17px] font-medium">
+                {user
+                  ? user?.firstName + " " + user?.lastName
+                  : auth?.user?.firstName + " " + auth?.user?.lastName}
               </h4>
               <span className="text-[16px] text-gray-600 dark:text-gray-200">
                 View your profile
@@ -479,6 +493,36 @@ export default function Header() {
           {/*  */}
           <hr className="w-full h-[2px] bg-gray-300 dark:bg-gray-800 dark:text-white text-black  my-5" />
           <div className="flex flex-col gap-4 w-full">
+            <div className="grid grid-cols-2 gap-4">
+              <div
+                onClick={() => router.push("/watch")}
+                className="flex flex-col gap-2 rounded-md py-4 shadow hover:shadow-md cursor-pointer items-center justify-center bg-gray-50 dark:bg-slate-700 "
+              >
+                <span>
+                  <MdOndemandVideo className="h-6 w-6 text-orange-600" />
+                </span>
+                <span className="text-center">Videos</span>
+              </div>
+              <div
+                onClick={() => router.push("/messages")}
+                className="flex flex-col gap-2 rounded-md py-4 shadow hover:shadow-md cursor-pointer items-center justify-center bg-gray-50 dark:bg-slate-700 "
+              >
+                <span>
+                  <FaFacebookMessenger className="h-6 w-6 text-pink-600" />
+                </span>
+                <span className="text-center">Messages</span>
+              </div>
+              {/*  */}
+              <div
+                onClick={() => router.push("/friends")}
+                className="flex flex-col gap-2 rounded-md py-4 shadow hover:shadow-md cursor-pointer items-center justify-center bg-gray-50 dark:bg-slate-700 "
+              >
+                <span>
+                  <HiUserGroup className="h-6 w-6 text-sky-600" />
+                </span>
+                <span className="text-center">Friends</span>
+              </div>
+            </div>
             <Disclosure as="div" className="-mx-3">
               <DisclosureButton className="group flex w-full items-center  dark:bg-gray-800 dark:text-white justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">
                 <span className=" flex items-center gap-4  dark:text-white text-black ">

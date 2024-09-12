@@ -10,8 +10,8 @@ dotenv.config();
 
 const s3 = new S3Client({
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_KEY,
-    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   },
   region: "eu-north-1",
 });
@@ -471,7 +471,7 @@ export const updatePost = async (req, res) => {
       const oldMediaKey = post.mediaUrl.split("/").pop();
 
       const deleteParams = {
-        Bucket: process.env.AWSS3_BUCKET_NAME,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: oldMediaKey,
       };
 
@@ -536,7 +536,7 @@ export const deletePost = async (req, res) => {
 
     // Delete the media from S3
     const deleteParams = {
-      Bucket: process.env.AWSS3_BUCKET_NAME,
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: mediaKey,
     };
 

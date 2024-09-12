@@ -603,7 +603,10 @@ export const updateCoverImage = async (req, res) => {
 // Get All User
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}).select("-password");
+    const users = await userModel
+      .find({})
+      .select("-password")
+      .sort({ createdAt: -1 });
 
     res.status(200).send({
       success: true,
@@ -694,6 +697,409 @@ export const uploadFile = async (req, res) => {
       success: false,
       message: "Error in upload file controller!",
       error: error,
+    });
+  }
+};
+
+// Get Contact List with required Data
+export const getContactList = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({})
+      .select(
+        "_id firstName lastName email profilePicture followers following friendRequests sendFriendRequests"
+      )
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get all user controller!",
+      error: error,
+    });
+  }
+};
+
+// Send Friend Request User
+export const sendFriendRequest = async (req, res) => {
+  try {
+    const receiverId = req.params.id;
+    const senderId = req.user.user._id;
+
+    if (receiverId === senderId) {
+      return res.status(400).send({
+        success: false,
+        message: "You cannot send a friend request to yourself!",
+      });
+    }
+
+    const sender = await userModel.findById(senderId);
+    const receiver = await userModel.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // Check if a friend request already exists in sender sendFriendRequests List
+    if (sender.sendFriendRequests.includes(receiverId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Friend request already sent!",
+      });
+    }
+
+    if (receiver.friendRequests.includes(senderId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Friend request already sent!",
+      });
+    }
+
+    // Check if the users are already friends
+    if (receiver.followers.includes(senderId)) {
+      return res.status(400).send({
+        success: false,
+        message: "You are already friends with this user!",
+      });
+    }
+
+    // Add friend request to the sender & receiver's  list
+    receiver.friendRequests.push(senderId);
+
+    sender.sendFriendRequests.push(receiverId);
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Friend request sent successfully!",
+      sender: sender,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error send friend request!",
+      error: error.message,
+    });
+  }
+};
+
+// Accept Friend Request
+export const acceptFriendRequest = async (req, res) => {
+  try {
+    const senderId = req.user.id;
+    const receiverId = req.params.id;
+
+    const sender = await userModel.findById(senderId);
+    const receiver = await userModel.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // Check If friend request Exist
+    if (!sender.friendRequests.includes(receiverId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Friend request not found!",
+      });
+    }
+
+    // Remove from friendRequests
+    sender.friendRequests = sender.friendRequests.filter(
+      (requestId) => requestId.toString() !== receiverId
+    );
+
+    // Also remove from the receiver's sendFriendRequests (or similar property if it exists)
+    receiver.sendFriendRequests = receiver.sendFriendRequests.filter(
+      (requestId) => requestId.toString() !== senderId
+    );
+
+    // Add each other to followers and following
+    if (!sender.following.includes(receiverId)) {
+      sender.following.push(receiverId);
+      receiver.followers.push(senderId);
+    }
+
+    if (!receiver.following.includes(senderId)) {
+      receiver.following.push(senderId);
+      sender.followers.push(receiverId);
+    }
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).send({
+      success: true,
+      message:
+        "Friend request accepted and users are now following each other!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in accepting friend request!",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel Friend Request (User send the friend Request)
+export const cancelFriendRequest = async (req, res) => {
+  try {
+    const senderId = req.user.id;
+    const receiverId = req.params.id;
+
+    const sender = await userModel.findById(senderId);
+    const receiver = await userModel.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // Check If friend request Exist Both Sender & receiver
+    if (!receiver.friendRequests.includes(senderId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Friend request not found!",
+      });
+    }
+
+    if (!sender.sendFriendRequests.includes(receiverId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Send friend request not found!",
+      });
+    }
+
+    // Remove from friendRequests
+    receiver.friendRequests = receiver.friendRequests.filter(
+      (requestId) => requestId.toString() !== senderId
+    );
+
+    sender.sendFriendRequests = sender.sendFriendRequests.filter(
+      (requestId) => requestId.toString() !== receiverId
+    );
+
+    // Unfollow each other
+    sender.following = sender.following.filter(
+      (followId) => followId.toString() !== receiverId
+    );
+    receiver.followers = receiver.followers.filter(
+      (followerId) => followerId.toString() !== senderId
+    );
+
+    receiver.following = receiver.following.filter(
+      (followId) => followId.toString() !== senderId
+    );
+
+    sender.followers = sender.followers.filter(
+      (followerId) => followerId.toString() !== receiverId
+    );
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).send({
+      success: true,
+      message:
+        "Friend request canceled and users are no longer following each other!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in cancel friend request!",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel Friend Request (User received the friend Request)
+export const cancelReceiveFriendRequest = async (req, res) => {
+  try {
+    const senderId = req.user.id;
+    const receiverId = req.params.id;
+
+    const sender = await userModel.findById(senderId);
+    const receiver = await userModel.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // Check If friend request Exist Both Sender & receiver
+    if (!receiver.friendRequests.includes(senderId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Friend request not found!",
+      });
+    }
+
+    if (!sender.sendFriendRequests.includes(receiverId)) {
+      return res.status(400).send({
+        success: false,
+        message: "Send friend request not found!",
+      });
+    }
+
+    // Remove from friendRequests
+    receiver.friendRequests = receiver.friendRequests.filter(
+      (requestId) => requestId.toString() !== senderId
+    );
+
+    sender.sendFriendRequests = sender.sendFriendRequests.filter(
+      (requestId) => requestId.toString() !== receiverId
+    );
+
+    // Unfollow each other
+    sender.following = sender.following.filter(
+      (followId) => followId.toString() !== receiverId
+    );
+    receiver.followers = receiver.followers.filter(
+      (followerId) => followerId.toString() !== senderId
+    );
+
+    receiver.following = receiver.following.filter(
+      (followId) => followId.toString() !== senderId
+    );
+
+    sender.followers = sender.followers.filter(
+      (followerId) => followerId.toString() !== receiverId
+    );
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).send({
+      success: true,
+      message:
+        "Friend request canceled and users are no longer following each other!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in cancel friend request!",
+      error: error.message,
+    });
+  }
+};
+
+// Follow User
+export const followUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const loggedInUserId = req.user.user._id;
+
+    if (userId === loggedInUserId) {
+      return res.status(400).send({
+        success: false,
+        message: "You cannot follow yourself!",
+      });
+    }
+
+    const userToFollow = await userModel.findById(userId);
+    const loggedInUser = await userModel.findById(loggedInUserId);
+
+    if (!userToFollow) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (userToFollow.followers.includes(loggedInUserId)) {
+      return res.status(400).send({
+        success: false,
+        message: "You are already following this user!",
+      });
+    }
+
+    userToFollow.followers.push(loggedInUserId);
+    loggedInUser.following.push(userId);
+
+    await userToFollow.save();
+    await loggedInUser.save();
+
+    res.status(200).send({
+      success: true,
+      message: "User followed successfully!",
+      following: loggedInUser.following,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error following user!",
+      error: error.message,
+    });
+  }
+};
+
+// Unfollow User
+export const unfollowUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const loggedInUserId = req.user.id;
+
+    const userToUnfollow = await userModel.findById(userId);
+    const loggedInUser = await userModel.findById(loggedInUserId);
+
+    if (!userToUnfollow) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (!userToUnfollow.followers.includes(loggedInUserId)) {
+      return res.status(400).send({
+        success: false,
+        message: "You are not following this user!",
+      });
+    }
+
+    userToUnfollow.followers = userToUnfollow.followers.filter(
+      (id) => id.toString() !== loggedInUserId.toString()
+    );
+    loggedInUser.following = loggedInUser.following.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+
+    await userToUnfollow.save();
+    await loggedInUser.save();
+
+    res.status(200).send({
+      success: true,
+      message: "User unfollowed successfully!",
+      following: loggedInUser,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error unfollowing user!",
+      error: error.message,
     });
   }
 };

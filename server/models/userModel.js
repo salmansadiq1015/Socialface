@@ -82,75 +82,31 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    photos: [
+    // stories: [
+    //   {
+    //     url: {
+    //       type: String,
+    //       required: true,
+    //     },
+    //     caption: {
+    //       type: String,
+    //       default: "",
+    //       trim: true,
+    //     },
+    //     createdAt: {
+    //       type: Date,
+    //       default: Date.now,
+    //     },
+    //   },
+    // ],
+
+    followers: [
       {
-        url: {
-          type: String,
-          required: true,
-        },
-        caption: {
-          type: String,
-          default: "",
-          trim: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
-    videos: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-        caption: {
-          type: String,
-          default: "",
-          trim: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    reels: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-        caption: {
-          type: String,
-          default: "",
-          trim: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    stories: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-        caption: {
-          type: String,
-          default: "",
-          trim: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    friends: [
+    following: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -162,26 +118,19 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    posts: [
+    sendFriendRequests: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Post",
+        ref: "User",
       },
     ],
-    marketPlace: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "marketPlace",
-      },
-    ],
+
     likedPosts: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Post",
       },
     ],
-
-    friends: [],
     lockProfile: {
       type: Boolean,
       default: false,
