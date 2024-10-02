@@ -82,24 +82,6 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    // stories: [
-    //   {
-    //     url: {
-    //       type: String,
-    //       required: true,
-    //     },
-    //     caption: {
-    //       type: String,
-    //       default: "",
-    //       trim: true,
-    //     },
-    //     createdAt: {
-    //       type: Date,
-    //       default: Date.now,
-    //     },
-    //   },
-    // ],
-
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -148,6 +130,10 @@ const userSchema = new mongoose.Schema(
     },
     passwordResetTokenExpire: {
       type: Date,
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

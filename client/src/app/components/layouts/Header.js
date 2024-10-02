@@ -105,7 +105,7 @@ export default function Header() {
     toast.success("Logout successfully!");
   };
 
-  // Close Timer Status to click anywhere
+  // Close Menu to click any where
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (headerManu.current && !headerManu.current.contains(event.target)) {
@@ -302,7 +302,10 @@ export default function Header() {
                 />
               </span>
               <span
-                onClick={() => setIsActive(6)}
+                onClick={() => {
+                  setIsActive(6);
+                  router.push(`/messages/${auth.user._id}`);
+                }}
                 className={`p-2 rounded-full ${
                   isActive === 6 ? " bg-orange-600/20 " : "bg-gray-500/20"
                 }`}
@@ -318,7 +321,7 @@ export default function Header() {
               {/* Notifications */}
               <span
                 onClick={() => setIsActive(7)}
-                className={`p-2 relative rounded-full ${
+                className={`p-2 mr-1 relative rounded-full ${
                   isActive === 7 ? " bg-orange-600/20 " : "bg-gray-500/20"
                 }`}
               >
@@ -504,7 +507,7 @@ export default function Header() {
                 <span className="text-center">Videos</span>
               </div>
               <div
-                onClick={() => router.push("/messages")}
+                onClick={() => router.push(`/messages/${auth.user._id}`)}
                 className="flex flex-col gap-2 rounded-md py-4 shadow hover:shadow-md cursor-pointer items-center justify-center bg-gray-50 dark:bg-slate-700 "
               >
                 <span>

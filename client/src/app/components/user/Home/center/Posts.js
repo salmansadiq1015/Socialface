@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { IoIosPlayCircle } from "react-icons/io";
 import Swal from "sweetalert2";
 
-const Posts = ({ user, loading, posts, getAllPost }) => {
+const Posts = ({ user, loading, posts, getAllPost, page }) => {
   const videoRefs = useRef([]);
   const { auth } = useAuth();
   const [updateShow, setUpdateShow] = useState(false);
@@ -509,7 +509,7 @@ const Posts = ({ user, loading, posts, getAllPost }) => {
                     src={post?.mediaUrl}
                     layout="fill"
                     alt="Story"
-                    className=""
+                    className={`${page === "watch" && "hidden"}`}
                     loading="lazy"
                   />
                 ) : (

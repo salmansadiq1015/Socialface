@@ -366,12 +366,12 @@ export default function PostDetail({ params }) {
           {/* 1 */}
           <div className="relative col-span-6 md:col-span-7 py-4 px-2 sm:px-4 w-full h-full border-r dark:border-gray-700  ">
             <span
-              onClick={() => router.push("/")}
-              className="absolute top-1 left-1 cursor-pointer p-1 rounded-full bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-200/50 hover:dark:bg-gray-700/50 z-[10]"
+              onClick={() => router.back()}
+              className="absolute top-1 left-1 cursor-pointer p-1 rounded-full bg-gray-200/50 dark:bg-gray-800/30 hover:bg-gray-300/50 hover:dark:bg-gray-700/50 z-[10]"
             >
               <IoClose className="h-6 w-6 " />
             </span>
-            <div className="  h-[17rem] sm:h-[80vh] p-1 sm:p-3 rounded-lg bg-gray-100/60 dark:bg-gray-800/60 flex items-center justify-center w-full  border dark:border-gray-600 shadow-md">
+            <div className="h-[17rem] sm:h-[80vh] p-1 sm:p-3 rounded-lg bg-gray-100/60 dark:bg-gray-800/60 flex items-center justify-center w-full  border dark:border-gray-600 shadow-md">
               <div className="relative w-full h-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 cursor-pointer  ">
                 {postDetail?.mediaType === "Image" ? (
                   <Image

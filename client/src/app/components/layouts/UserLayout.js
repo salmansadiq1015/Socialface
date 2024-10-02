@@ -34,13 +34,13 @@ export default function UserLayout({
     setLoading(false);
   }, [count, router, auth]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen px-8">
-        <Loader />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen px-8">
+  //       <Loader />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className=" ">
@@ -52,7 +52,7 @@ export default function UserLayout({
         <title>{title}</title>
       </Helmet>
       <Header />
-      <main className=" min-h-screen overflow-y-hidden  mt-[5.4rem] sm:mt-[3.6rem] dark:bg-gray-950 dark:text-white text-black ">
+      <main className=" h-[calc(100vh-5.4rem)]   sm:h-[calc(100vh-3.6rem)] overflow-y-hidden mt-[5.4rem] sm:mt-[3.6rem] dark:bg-gray-950 dark:text-white text-black ">
         {children}
       </main>
     </div>

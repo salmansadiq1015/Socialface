@@ -14,6 +14,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [allContacts, setAllContacts] = useState([]);
   const [userLoad, setUserLoad] = useState(false);
+  const [friends, setFriends] = useState([]);
 
   // check token
   axios.defaults.headers.common["Authorization"] = auth?.token;
@@ -57,6 +58,19 @@ const AuthProvider = ({ children }) => {
     const currentUser = allContacts.filter((u) => u._id === auth?.user?._id);
     setUser(...currentUser);
   }, [allContacts, auth]);
+
+  useEffect(() => {
+    console.log("user", user);
+    if (allContacts && user) {
+      const friendList = allContacts.filter((item) =>
+        user.following.includes(item._id)
+      );
+      setFriends(friendList);
+    } else {
+      setFriends([]);
+    }
+  }, [allContacts, user]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -70,6 +84,7 @@ const AuthProvider = ({ children }) => {
         allContacts,
         userLoad,
         getAllUsers,
+        friends,
       }}
     >
       {children}

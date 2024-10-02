@@ -70,7 +70,7 @@ export default function Home() {
 
   return (
     <UserLayout title="SocialFace - Home">
-      <div className="w-full h-full min-h-screen bg-white dark:bg-gray-950 overflow-hidden">
+      <div className="w-full h-[100%] bg-white dark:bg-gray-950 overflow-hidden">
         <div class="flex flex-1">
           {/* <!-- Left Column --> */}
           <div class="w-full md:w-1/2 lg:w-1/2 xl:w-1/2  hidden lg:block">
@@ -79,7 +79,7 @@ export default function Home() {
 
           {/* <!-- Center Column --> */}
           <div class="w-full min-h-screen md:w-6/10 lg:w-6/10 xl:w-6/10 md:mx-auto ">
-            <div class="w-full flex flex-col gap-4 h-screen py-4 px-1 border-l border-gray-400 border-r overflow-y-scroll shidden">
+            <div class="w-full flex flex-col gap-4 h-screen pb-[6rem] sm:pb-[4rem] py-4 px-1 border-l border-gray-400 border-r overflow-y-scroll shidden">
               {/* Stories Section */}
               <div className="w-full overscroll-x-auto ">
                 <Stories user={auth.user} />
@@ -92,13 +92,14 @@ export default function Home() {
                 loading={loading}
                 posts={posts}
                 getAllPost={getAllPost}
+                page={"home"}
               />
             </div>
           </div>
 
           {/* <!-- Right Column --> */}
           <div class=" w-full md:w-1/2 lg:w-1/2 xl:w-1/2 hidden md:block px-2 py-2">
-            <div className=" flex flex-col gap-4 w-full  h-screen overflow-y-auto">
+            <div className=" flex flex-col gap-4 w-full  h-screen pb-[4.5rem] overflow-y-auto">
               <Sponsored />
               {/* <hr className="w-full h-[1px] bg-gray-300 dark:bg-gray-800 my-1" /> */}
               <FriendList

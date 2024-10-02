@@ -8,6 +8,7 @@ const nextConfig = {
       "localhost",
       "commondatastorage.googleapis.com",
       "example.com",
+      "res.cloudinary.com",
     ],
   },
 };

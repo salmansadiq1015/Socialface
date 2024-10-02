@@ -5,4 +5,9 @@ export const Style = {
     "flex items-center justify-center text-white bg-orange-600 hover:bg-orange-700 w-full h-[2.6rem] rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-150 cursor-pointer",
   button2:
     "flex items-center justify-center text-white bg-orange-500 hover:bg-orange-600  h-[2.6rem] rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-200 cursor-pointer",
+
+  text_gradient:
+    "text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500",
+  bg_gradient:
+    "bg-gradient-to-r from-orange-500 via-orange-500 to-yellow-500 text-white",
 };
