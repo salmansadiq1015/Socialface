@@ -20,6 +20,7 @@ export default function Login({ setActive }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const { auth, setAuth } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e) => {
@@ -28,7 +29,7 @@ export default function Login({ setActive }) {
     try {
       const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/user/login_user`,
-        { email, password }
+        { email, password, rememberMe }
       );
       if (data) {
         setAuth({ ...auth, user: data?.user, token: data?.token });
@@ -95,8 +96,15 @@ export default function Login({ setActive }) {
             </div>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1 text-[14px]">
-                <input type="checkbox" /> Remember me
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 appearance-none border rounded-sm bg-white checked:bg-orange-500 checked:border-orange-500 cursor-pointer relative checked:before:absolute checked:before:content-['✔'] checked:before:text-white checked:before:text-[10px] checked:before:left-1/2 checked:before:top-1/2 checked:before:transform checked:before:-translate-x-1/2 checked:before:-translate-y-1/2"
+                />
+                Remember me
               </span>
+
               <span
                 onClick={() => setActive("resetPassword")}
                 className="text-[14px] text-orange-500 hover:text-orange-600 cursor-pointer"

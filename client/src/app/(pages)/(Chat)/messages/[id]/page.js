@@ -30,6 +30,12 @@ import MessageLoader from "@/app/LoadingSkelton/MessageLoader";
 import ChatLoader from "@/app/LoadingSkelton/ChatLoader";
 import { BsEmojiSunglasses } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
+import socketIO from "socket.io-client";
+import { useRouter } from "next/navigation";
+import SendCall from "@/app/components/Chat/SendCall";
+import ReceiveCall from "@/app/components/Chat/ReceiveCall";
+const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function Messages() {
   const { isActive, setIsActive, auth, friends, allContacts } = useAuth();
@@ -49,8 +55,10 @@ export default function Messages() {
   const [chatLoad, setChatLoad] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const closeEmoji = useRef(null);
+  const router = useRouter();
+  const [call, setCall] = useState(false);
 
-  console.log("chatMessages:", chatMessages);
+  console.log("personalChats", personalChats);
 
   useEffect(() => {
     setIsActive(6);
@@ -114,6 +122,51 @@ export default function Messages() {
       console.log(error);
     }
   };
+
+  // Update User Status (online|| Offline)
+
+  const updateUserStatusInChats = (updatedUserData) => {
+    setPersonalChats((prevChats) =>
+      prevChats.map((chat) => {
+        const updatedUsers = chat.users.map((user) =>
+          user._id === updatedUserData.userID
+            ? { ...user, isOnline: updatedUserData.isOnline }
+            : user
+        );
+
+        // Return the updated chat object
+        return { ...chat, users: updatedUsers };
+      })
+    );
+
+    // Update In Group Chat
+
+    setGroupChats((prevChats) =>
+      prevChats.map((chat) => {
+        const updatedUsers = chat.users.map((user) =>
+          user._id === updatedUserData.userID
+            ? { ...user, isOnline: updatedUserData.isOnline }
+            : user
+        );
+
+        // Return the updated chat object
+        return { ...chat, users: updatedUsers };
+      })
+    );
+  };
+
+  useEffect(() => {
+    socketId.on("newUserData", (updatedUserData) => {
+      // Update User Status
+      updateUserStatusInChats(updatedUserData);
+      allChatsWIthoutload();
+    });
+
+    return () => {
+      socketId.off("newUserData", allChatsWIthoutload);
+    };
+    // eslint-disable-next-line
+  }, [socketId]);
 
   // Get Chat from Local Storage
   useEffect(() => {
@@ -201,7 +254,7 @@ export default function Messages() {
   }, [selectedChat]);
 
   // Fetch Message Without Load
-  const fetchMessageWithoutLoad = async (e) => {
+  const fetchMessageWithoutLoad = async () => {
     if (!selectedChat) {
       return;
     }
@@ -218,6 +271,57 @@ export default function Messages() {
     }
   };
 
+  const updateChatUserLastMessage = (updateChat) => {
+    // Update latestMessage in Personal Chats
+    setPersonalChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat._id === updateChat.chatId) {
+          const updatedMessage = {
+            ...chat.latestMessage,
+            content: updateChat.content,
+            createdAt: updateChat.createdAt,
+          };
+
+          return { ...chat, latestMessage: updatedMessage };
+        }
+        return chat;
+      })
+    );
+
+    // Update latestMessage in Group Chats (If applicable)
+    setGroupChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat._id === updateChat.chatId) {
+          const updatedMessage = {
+            ...chat.latestMessage,
+            content: updateChat.content,
+            createdAt: updateChat.createdAt,
+          };
+
+          return { ...chat, latestMessage: updatedMessage };
+        }
+        return chat;
+      })
+    );
+  };
+
+  // Call When New Message Send
+  useEffect(() => {
+    const handleFetchMessages = (data) => {
+      console.log("data", data);
+      fetchMessageWithoutLoad();
+      updateChatUserLastMessage(data);
+    };
+
+    socketId.on("fetchMessages", handleFetchMessages);
+
+    return () => {
+      socketId.off("fetchMessages", handleFetchMessages);
+    };
+
+    // eslint-disable-next-line
+  }, [socketId]);
+
   // Handle Send Message
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -230,10 +334,15 @@ export default function Messages() {
           chatId: selectedChat._id,
         }
       );
+
       if (data) {
-        fetchMessageWithoutLoad();
+        socketId.emit("NewMessageAdded", {
+          content: message || "👍",
+          contentType: type,
+          chatId: selectedChat._id,
+          messageId: data._id,
+        });
         setMessage("");
-        toast.success("Message send successfully!");
       }
     } catch (error) {
       console.log(error);
@@ -251,10 +360,15 @@ export default function Messages() {
           chatId: selectedChat._id,
         }
       );
+
       if (data) {
-        fetchMessageWithoutLoad();
+        socketId.emit("NewMessageAdded", {
+          content: "👍",
+          contentType: "like",
+          chatId: selectedChat._id,
+          messageId: data._id,
+        });
         setMessage("");
-        toast.success("Message send successfully!");
       }
     } catch (error) {
       console.log(error);
@@ -273,9 +387,19 @@ export default function Messages() {
       });
     }
   }, [chatMessages]);
+
+  // Call Function
+  const handleCall = (type) => {
+    if (!selectedChat || !selectedChat._id) {
+      toast.error("No chat selected!");
+      return;
+    }
+    // Navigate to the room with call type as a query parameter
+    router.push(`/calling/${selectedChat._id}?callType=${type}`);
+  };
   return (
     <UserLayout title="SocialFace - Messages">
-      <div className="w-full h-[100%] overflow-x-hidden ">
+      <div className="relative w-full h-[100%] overflow-x-hidden ">
         <div className="relative w-full h-full grid grid-cols-11">
           <div
             className={`${
@@ -537,6 +661,8 @@ export default function Messages() {
                       data-tooltip-id="my-tooltip"
                       data-tooltip-content="Start a voice call"
                       className="p-1 bg-gray-100/80 rounded-full hover:bg-gray-200/70"
+                      onClick={() => setCall(true)}
+                      // handleCall("audio")
                     >
                       <MdWifiCalling3 className="h-5 w-5 text-orange-500 hover:text-orange-600 cursor-pointer" />
                     </span>
@@ -544,6 +670,7 @@ export default function Messages() {
                       data-tooltip-id="my-tooltip"
                       data-tooltip-content="Start a video call"
                       className="p-1 bg-gray-100/80 rounded-full hover:bg-gray-200/70"
+                      onClick={() => handleCall("video")}
                     >
                       <MdVideoCall className="h-5 w-5 text-orange-500 hover:text-orange-600 cursor-pointer" />
                     </span>
@@ -775,6 +902,20 @@ export default function Messages() {
             <NotChat />
           )}
         </div>
+
+        {/* ------------Send Call------- */}
+        {/* {call && (
+          <div className="fixed top-0 left-0 w-full h-screen overflow-hidden z-[99999] bg-white dark:bg-slate-950">
+            <SendCall selectedChat={selectedChat} setCall={setCall} />
+          </div>
+        )} */}
+
+        {/* ----------Pick Call------- */}
+        {call && (
+          <div className="fixed top-0 left-0 w-full h-screen overflow-hidden z-[99999] bg-white dark:bg-slate-950">
+            <ReceiveCall selectedChat={selectedChat} setCall={setCall} />
+          </div>
+        )}
       </div>
     </UserLayout>
   );

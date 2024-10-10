@@ -1,7 +1,8 @@
-// SocketHandler.js
+"use client";
+
 import { useEffect } from "react";
 import socketIO from "socket.io-client";
-import { useAuth } from "./authContext"; // Ensure the correct import path
+import { useAuth } from "./authContext";
 
 const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
 
@@ -31,9 +32,9 @@ const SocketHandler = () => {
         socketId.disconnect();
       };
     }
-  }, [auth?.user?._id]);
+  }, [auth?.user?._id, getAllUsers]);
 
-  return null; // No need to render anything
+  return null;
 };
 
 export default SocketHandler;

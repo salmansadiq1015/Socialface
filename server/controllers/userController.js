@@ -191,6 +191,7 @@ export const verificationUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
+
     if (!email || !password) {
       return res.status(400).send({
         success: false,
@@ -261,7 +262,7 @@ export const updateProfile = async (req, res) => {
 
     // Existing User
 
-    const user = await userModel.findOne({ _id: userId });
+    const user = await userModel.findById({ _id: userId });
     if (!user) {
       return res.status(400).send({
         success: false,
@@ -288,7 +289,8 @@ export const updateProfile = async (req, res) => {
         "about.relationshipStatus":
           relationshipStatus || user.about.relationshipStatus,
         "about.phoneNumber": phoneNumber || user.about.phoneNumber,
-      }
+      },
+      { new: true }
     );
 
     res.status(200).send({
@@ -647,9 +649,7 @@ export const getSingleUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await userModel
-      .find({ _id: userId })
-      .select("_id firstName email password");
+    const user = await userModel.findById({ _id: userId });
 
     if (!user) {
       return res.status(400).send({
