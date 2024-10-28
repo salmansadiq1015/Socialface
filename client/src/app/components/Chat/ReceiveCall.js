@@ -1,15 +1,83 @@
 import { useAuth } from "@/app/context/authContext";
 import Image from "next/image";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
 import { FaPhoneSlash } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
 
-export default function ReceiveCall({ selectedChat, setCall }) {
+// Socket
+import socketIO from "socket.io-client";
+const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+
+export default function ReceiveCall({
+  setIsShowReceiveCall,
+  selectedChat,
+  callType,
+}) {
   const { auth } = useAuth();
+  const router = useRouter();
+
+  const handleCallAccepted = () => {
+    if (!selectedChat || !selectedChat._id) {
+      toast.error("No chat selected!");
+      return;
+    }
+    // Emit acceptance to server
+    socketId.emit("callAccepted", {
+      callData: {
+        chatId: selectedChat._id,
+        receiverId: auth.user._id,
+        senderId:
+          auth?.user?._id === selectedChat?.users[0]._id
+            ? selectedChat?.users[1]._id
+            : selectedChat?.users[0]._id,
+      },
+    });
+    // Navigate to the room with call type as a query parameter
+    router.push(`/calling/${selectedChat._id}?callType=${callType}`);
+  };
+
+  // Handle Reject Call
+  const handleCallRejected = () => {
+    // Emit rejection to server
+    socketId.emit("callRejected", {
+      callData: {
+        chatId: selectedChat._id,
+        receiverId: auth.user._id,
+        senderId:
+          auth?.user?._id === selectedChat?.users[0]._id
+            ? selectedChat?.users[1]._id
+            : selectedChat?.users[0]._id,
+      },
+    });
+    setIsShowReceiveCall(false);
+  };
+
+  // -------In Sender Reject Call------>
+
+  useEffect(() => {
+    socketId.on("callRejected", (callData) => {
+      const { chatId, receiverId } = callData;
+
+      if (selectedChat._id === chatId && receiverId === auth.user._id) {
+        setIsShowReceiveCall(false);
+        toast.error("Missed call!");
+      }
+    });
+
+    // Cleanup socket events on component unmount
+    return () => {
+      socketId.off("callRejected");
+    };
+  }, [socketId]);
+
   return (
-    <div className="w-full h-screen overflow-hidden flex items-center  gap-4 justify-center flex-col px-4 py-4">
-      <div className="w-[28rem] py-5 px-4 rounded-lg bg-gradient-to-r from-orange-600 via-orange-500 to-orange-300 flex items-center justify-center flex-col gap-4">
-        <div className="relative w-[4rem] h-[4rem] sm:w-[5.5rem] sm:h-[5.5rem] rounded-full ring-2 object-fill overflow-hidden ring-orange-400 dark:ring-slate-700  animate-zoom-animation">
+    <div className="w-full h-screen overflow-hidden flex items-center  gap-4 justify-center flex-col px-4 py-4 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900">
+      <div className=" w-[21rem] sm:w-[28rem] py-5 px-4 rounded-lg bg-gradient-to-r from-orange-600 via-orange-500 to-orange-300 flex items-center justify-center flex-col gap-4">
+        <div className="relative w-[4rem] h-[4rem] sm:w-[5rem] sm:h-[5rem] rounded-full ring-4 ring-white shadow-lg overflow-hidden animate-wave-animation">
+          <div className="absolute inset-0 rounded-full bg-orange-400 opacity-50 animate-wave-animation"></div>
           <Image
             src={
               auth?.user?._id === selectedChat?.users[0]._id
@@ -40,7 +108,7 @@ export default function ReceiveCall({ selectedChat, setCall }) {
         <div className="flex items-center justify-center gap-[2rem]">
           <span
             className="py-2 px-[2rem] mt-4 mr-2 rounded-[2rem] bg-red-600 hover:bg-red-700 transition-all duration-300 cursor-pointer text-white"
-            onClick={() => setCall(false)}
+            onClick={() => handleCallRejected()}
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Leave this call"
           >
@@ -49,7 +117,7 @@ export default function ReceiveCall({ selectedChat, setCall }) {
           </span>
           <span
             className="py-2 px-[2rem] mt-[1rem] mr-2 rounded-[2rem] bg-green-600 hover:bg-green-700 transition-all duration-300 cursor-pointer text-white animate-shake"
-            onClick={() => setCall(false)}
+            onClick={() => handleCallAccepted()}
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Accept this call"
           >

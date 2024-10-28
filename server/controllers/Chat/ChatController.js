@@ -136,12 +136,129 @@ export const groupChat = async (req, res) => {
     }
     userData.push(req.user.user);
 
+    console.log(chatName);
+    const isExisting = await chatModel.findOne({
+      chatName: chatName,
+      isGroupChat: true,
+    });
+
+    if (isExisting) {
+      return res.status(400).send({
+        success: false,
+        message: `Group with ${
+          isExisting.chatName || "this"
+        } name already exist, use another name!`,
+      });
+    }
+
     const groupChat = await chatModel.create({
       chatName: chatName,
       users: userData,
       isGroupChat: true,
       avatar: avatar,
     });
+
+    // Fetch Group
+    const fullGroupChat = await chatModel
+      .findById({ _id: groupChat._id })
+      .populate(
+        "users",
+        "-password -dateOfBirth -gender -coverPhoto -bio -website -location -followers -following -friendRequests -sendFriendRequests -likedPosts -role -passwordResetToken -passwordResetTokenExpire"
+      )
+      .populate(
+        "groupAdmin",
+        "-password -dateOfBirth -gender -coverPhoto -bio -website -location -followers -following -friendRequests -sendFriendRequests -likedPosts -role -passwordResetToken -passwordResetTokenExpire"
+      );
+
+    res.status(200).send({
+      success: true,
+      message: "Group chat created successfully!",
+      groupChat: fullGroupChat,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while create group chat!",
+      error: error,
+    });
+  }
+};
+
+// Fetch Single Group Chat
+export const fetchGroupChat = async (req, res) => {
+  try {
+    const chatId = req.params.id;
+
+    if (!chatId) {
+      return res
+        .status(400)
+        .send({ success: false, message: "Chat id is required!" });
+    }
+
+    await chatModel
+      .find({ _id: chatId })
+      .populate("users", "firstName lastName email ")
+      .populate("groupAdmin", "firstName lastName email ")
+      .sort({ updatedAt: -1 })
+      .then(async (results) => {
+        results = await userModel.populate(results, {
+          path: "latestMessage.sender",
+          select: "firstName lastName email ",
+        });
+        res.status(200).send({
+          result: results,
+        });
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while fetch group chat!",
+      error: "error",
+    });
+  }
+};
+
+// Update Group
+export const updateGroupChat = async (req, res) => {
+  try {
+    const chatId = req.params.id;
+    const { users, chatName, avatar } = req.body;
+    if (!chatName || !users) {
+      return res.status(400).send({
+        success: false,
+        message: "Group name and users are required!",
+      });
+    }
+    if (!avatar) {
+      return res.status(400).send({
+        success: false,
+        message: "Group avatar are required!",
+      });
+    }
+
+    const userData = JSON.parse(users);
+
+    if (userData.lenght < 2) {
+      return res.status(400).send({
+        success: false,
+        message: "Please select at least 2 users!",
+      });
+    }
+    userData.push(req.user.user);
+
+    const isExisting = await chatModel.findById({ _id: chatId });
+
+    const groupChat = await chatModel.findByIdAndUpdate(
+      { _id: isExisting._id },
+      {
+        chatName: chatName,
+        users: userData,
+        avatar: avatar,
+      },
+      { new: true }
+    );
 
     // Fetch Group
     const fullGroupChat = await chatModel

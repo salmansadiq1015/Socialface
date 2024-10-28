@@ -71,6 +71,42 @@ const AuthProvider = ({ children }) => {
     }
   }, [allContacts, user]);
 
+  // const getUserDetail = async (id) => {
+  //   if (!id) {
+  //     return;
+  //   }
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/user/user/info/${id}`
+  //     );
+
+  //     const updateAuthData = {
+  //       user: { ...data.user },
+  //       token: auth.token,
+  //     };
+
+  //     // Save the updated auth data to localStorage
+  //     localStorage.setItem("auth", JSON.stringify(updateAuthData));
+
+  //     // Update the auth state
+  //     setAuth((prevAuth) => ({
+  //       ...prevAuth,
+  //       ...updateAuthData,
+  //     }));
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   const userId = auth?.user?._id;
+  //   if (userId) {
+  //     getUserDetail(userId);
+  //   }
+
+  //   // eslint-disable-next-line
+  // }, [auth?.user]);
+
   return (
     <AuthContext.Provider
       value={{

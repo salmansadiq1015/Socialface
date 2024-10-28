@@ -205,7 +205,7 @@ export default function Header() {
               onClick={() => {
                 router.push("/"), setIsActive(1);
               }}
-              className={`p-2 rounded-full sm:py-2 sm:rounded-none  ${
+              className={`p-2 rounded-full sm:py-2 sm:rounded-none cursor-pointer ${
                 isActive === 1
                   ? " bg-orange-600/20 sm:bg-transparent sm:border-b-[2px] sm:border-orange-600 "
                   : "bg-transparent"
@@ -224,7 +224,7 @@ export default function Header() {
               onClick={() => {
                 router.push("/watch"), setIsActive(2);
               }}
-              className={`p-2 rounded-full sm:py-2 sm:rounded-none  ${
+              className={`p-2 rounded-full sm:py-2 sm:rounded-none cursor-pointer  ${
                 isActive === 2
                   ? " bg-orange-600/20 sm:bg-transparent sm:border-b-[2px] sm:border-orange-600 "
                   : "bg-transparent"
@@ -241,7 +241,7 @@ export default function Header() {
 
             <span
               onClick={() => setIsActive(3)}
-              className={`p-2 rounded-full sm:py-2 sm:rounded-none  ${
+              className={`p-2 rounded-full sm:py-2 sm:rounded-none cursor-pointer  ${
                 isActive === 3
                   ? " bg-orange-600/20 sm:bg-transparent sm:border-b-[2px] sm:border-orange-600 "
                   : "bg-transparent"
@@ -258,7 +258,7 @@ export default function Header() {
 
             <span
               onClick={() => setIsActive(4)}
-              className={`p-2 rounded-full sm:py-2 sm:rounded-none  ${
+              className={`p-2 rounded-full sm:py-2 sm:rounded-none cursor-pointer  ${
                 isActive === 4
                   ? " bg-orange-600/20 sm:bg-transparent sm:border-b-[2px] sm:border-orange-600 "
                   : "bg-transparent"
@@ -289,7 +289,7 @@ export default function Header() {
             <div className="flex items-center gap-3 sm:gap-4 py-[3px] ">
               <span
                 onClick={() => setIsActive(5)}
-                className={`p-2 hidden sm:flex rounded-full ${
+                className={`p-2 hidden sm:flex rounded-full cursor-pointer ${
                   isActive === 5 ? " bg-orange-600/20 " : "bg-gray-500/20"
                 }`}
               >
@@ -306,7 +306,7 @@ export default function Header() {
                   setIsActive(6);
                   router.push(`/messages/${auth.user._id}`);
                 }}
-                className={`p-2 rounded-full ${
+                className={`p-2 rounded-full cursor-pointer ${
                   isActive === 6 ? " bg-orange-600/20 " : "bg-gray-500/20"
                 }`}
               >
@@ -321,7 +321,7 @@ export default function Header() {
               {/* Notifications */}
               <span
                 onClick={() => setIsActive(7)}
-                className={`p-2 mr-1 relative rounded-full ${
+                className={`p-2 mr-1 relative rounded-full cursor-pointer ${
                   isActive === 7 ? " bg-orange-600/20 " : "bg-gray-500/20"
                 }`}
               >
@@ -340,7 +340,7 @@ export default function Header() {
             {/*  */}
             <div className="w-[3.1rem] h-[3.1rem] relative hidden sm:block">
               <div
-                className={`relative ml-[2rem] w-[3rem] h-[3rem] cursor-pointer   rounded-full overflow-hidden border-2 ${
+                className={`relative ml-[2rem] w-[3rem] h-[3rem]  cursor-pointer   rounded-full overflow-hidden border-2 ${
                   isActive === 8 && show && "border-orange-600"
                 } `}
                 onClick={() => {

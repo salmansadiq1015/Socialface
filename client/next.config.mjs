@@ -9,6 +9,7 @@ const nextConfig = {
       "commondatastorage.googleapis.com",
       "example.com",
       "res.cloudinary.com",
+      "chatpdf.ai.s3.ap-southeast-1.amazonaws.com",
     ],
   },
 };

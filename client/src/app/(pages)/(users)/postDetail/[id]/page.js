@@ -48,6 +48,7 @@ export default function PostDetail({ params }) {
   const router = useRouter();
   const fetchCalled = useRef(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const closeEmoji = useRef(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -359,9 +360,23 @@ export default function PostDetail({ params }) {
     }
   };
 
+  // -----------------Close Emoji------->
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (closeEmoji.current && !closeEmoji.current.contains(event.target)) {
+        setShowPicker(false);
+        setShowReplyPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <UserLayout title="SocialFace - Home">
-      <div className="w-full min-h-screen dark:text-white text-black">
+      <div className="w-full h-screen dark:text-white text-black overflow-y-scroll shidden">
         <div className="grid grid-cols-1 sm:grid-cols-10 gap-2  ">
           {/* 1 */}
           <div className="relative col-span-6 md:col-span-7 py-4 px-2 sm:px-4 w-full h-full border-r dark:border-gray-700  ">
@@ -396,7 +411,7 @@ export default function PostDetail({ params }) {
             </div>
           </div>
           {/* -------2----------- */}
-          <div className="col-span-4 md:col-span-3 py-4 px-0 sm:pr-1 h-screen overflow-auto shidden ">
+          <div className="col-span-4 md:col-span-3 py-4 px-0 sm:pr-1 h-[92vh] overflow-auto shidden scroll-smooth ">
             <div className="flex flex-col gap-2">
               <div className="w-full flex items-center justify-between px-3">
                 <div className="flex items-center gap-1">
@@ -702,7 +717,10 @@ export default function PostDetail({ params }) {
                                       <BsEmojiSmile className="text-yellow-500 hover:text-yellow-600 z-20 h-4 w-4 cursor-pointer" />
                                     </span>
                                     {showReplyPicker && (
-                                      <span className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40">
+                                      <span
+                                        ref={closeEmoji}
+                                        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40"
+                                      >
                                         <EmojiPicker
                                           onEmojiClick={onEmojiClickReply}
                                         />
@@ -819,7 +837,10 @@ export default function PostDetail({ params }) {
                             <BsEmojiSmile className="text-yellow-500 hover:text-yellow-600 z-20 h-5 w-5 cursor-pointer" />
                           </span>
                           {showPicker && (
-                            <span className="absolute bottom-5 left-0 z-40">
+                            <span
+                              ref={closeEmoji}
+                              className="absolute bottom-5 left-0 z-40"
+                            >
                               <EmojiPicker onEmojiClick={onEmojiClick} />
                             </span>
                           )}

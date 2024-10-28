@@ -6,6 +6,7 @@ import { Label } from "@headlessui/react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { FaPhotoVideo } from "react-icons/fa";
+import StoryLoader from "@/app/LoadingSkelton/StoryLoader";
 
 const Stories = ({ user }) => {
   const [show, setShow] = useState(false);
@@ -13,23 +14,28 @@ const Stories = ({ user }) => {
   const [stories, setStories] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
   const [storyDetail, setStoryDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   console.log("Single Story:", storyDetail);
 
   // Get All Stories
   const getAllStories = async () => {
+    setIsLoading(true);
     try {
       const { data } = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/story/get/stories`
       );
-      console.log("Stories:", data);
       if (data) {
         setStories(data.stories);
+        setIsLoading(false);
       }
     } catch (error) {
+      setIsLoading(false);
       console.log(error);
       const errorMessage = error.response?.data?.message || "An error occurred";
       toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -158,72 +164,78 @@ const Stories = ({ user }) => {
 
   return (
     <div className="w-full sm:max-w-[38rem] mx-auto ">
-      <div className="flex space-x-3 overflow-x-scroll shidden">
-        {/* Create Stroey */}
-        <div
-          className="relative w-40 h-60 flex flex-col gap-1 shadow-md  hover:shadow-lg bg-gray-100 dark:bg-gray-800  transition-all duration-200 cursor-pointer border rounded-lg "
-          onClick={() => setShow(true)}
-        >
-          <div className="relative w-40 h-44  flex-shrink-0  rounded-tl-lg rounded-tr-lg overflow-hidden ">
-            <Image
-              src={user?.profilePicture}
-              layout="fill"
-              objectFit="cover"
-              alt="Story"
-              className="rounded-tl-lg rounded-tr-lg "
-            />
-          </div>
-          <div className="flex items-center flex-col gap-2 justify-center ">
-            <span className="border-2 border-white rounded-full translate-y-[-1.2rem] bg-white">
-              <FaCirclePlus className="h-8 w-8 text-orange-600 cursor-pointer" />
-            </span>
-            <span className="text-[14px] font-medium text-black dark:text-white translate-y-[-1.2rem]">
-              Create Story
-            </span>
-          </div>
+      {isLoading ? (
+        <div className="flex space-x-3 overflow-x-scroll shidden">
+          <StoryLoader />
         </div>
-        {/* ------------Stories----------- */}
-        {stories &&
-          stories?.map((story, i) => (
-            <>
-              <div
-                key={story._id}
-                className="relative bg-gray-100 dark:bg-gray-800 w-40 h-60 flex-shrink-0 shadow-md hover:shadow-lg transition-all duration-200 border overflow-hidden rounded-lg cursor-pointer"
-                onClick={() => {
-                  filterStory(story._id), setShowDetail(true);
-                }}
-              >
-                <div className="absolute top-2 left-2 w-[2.5rem] bg-white dark:bg-gray-800 h-[2.5rem] rounded-full border-2 border-orange-600 overflow-hidden z-20">
-                  <Image
-                    src={story?.profileImage}
-                    alt="Profile"
-                    layout="fill"
-                    className="rounded-lg"
-                    objectFit="cover"
-                  />
+      ) : (
+        <div className="flex space-x-3 overflow-x-scroll shidden">
+          {/* Create Stroey */}
+          <div
+            className="relative w-40 h-60 flex flex-col gap-1 shadow-md  hover:shadow-lg bg-gray-100 dark:bg-gray-800  transition-all duration-200 cursor-pointer border rounded-lg "
+            onClick={() => setShow(true)}
+          >
+            <div className="relative w-40 h-44  flex-shrink-0  rounded-tl-lg rounded-tr-lg overflow-hidden ">
+              <Image
+                src={user?.profilePicture}
+                layout="fill"
+                objectFit="cover"
+                alt="Story"
+                className="rounded-tl-lg rounded-tr-lg "
+              />
+            </div>
+            <div className="flex items-center flex-col gap-2 justify-center ">
+              <span className="border-2 border-white rounded-full translate-y-[-1.2rem] bg-white">
+                <FaCirclePlus className="h-8 w-8 text-orange-600 cursor-pointer" />
+              </span>
+              <span className="text-[14px] font-medium text-black dark:text-white translate-y-[-1.2rem]">
+                Create Story
+              </span>
+            </div>
+          </div>
+          {/* ------------Stories----------- */}
+          {stories &&
+            stories?.map((story, i) => (
+              <>
+                <div
+                  key={story._id}
+                  className="relative bg-gray-100 dark:bg-gray-800 w-40 h-60 flex-shrink-0 shadow-md hover:shadow-lg transition-all duration-200 border overflow-hidden rounded-lg cursor-pointer"
+                  onClick={() => {
+                    filterStory(story._id), setShowDetail(true);
+                  }}
+                >
+                  <div className="absolute top-2 left-2 w-[2.5rem] bg-white dark:bg-gray-800 h-[2.5rem] rounded-full border-2 border-orange-600 overflow-hidden z-20">
+                    <Image
+                      src={story?.profileImage}
+                      alt="Profile"
+                      layout="fill"
+                      className="rounded-lg"
+                      objectFit="cover"
+                    />
+                  </div>
+                  {story.mediaType === "Image" ? (
+                    <Image
+                      src={story?.mediaUrl}
+                      layout="fill"
+                      objectFit="cover"
+                      alt="Story"
+                      className="rounded-lg"
+                    />
+                  ) : (
+                    <video
+                      src={story?.mediaUrl}
+                      // controls
+                      className="rounded-lg w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="absolute bottom-0 left-0 p-2 bg-gradient-to-t from-black to-transparent text-white rounded-b-lg">
+                    <p className="text-xs">{story.userName}</p>
+                  </div>
                 </div>
-                {story.mediaType === "Image" ? (
-                  <Image
-                    src={story?.mediaUrl}
-                    layout="fill"
-                    objectFit="cover"
-                    alt="Story"
-                    className="rounded-lg"
-                  />
-                ) : (
-                  <video
-                    src={story?.mediaUrl}
-                    // controls
-                    className="rounded-lg w-full h-full object-cover"
-                  />
-                )}
-                <div className="absolute bottom-0 left-0 p-2 bg-gradient-to-t from-black to-transparent text-white rounded-b-lg">
-                  <p className="text-xs">{story.userName}</p>
-                </div>
-              </div>
-            </>
-          ))}
-      </div>
+              </>
+            ))}
+        </div>
+      )}
 
       {/* Upload Story Modal */}
 

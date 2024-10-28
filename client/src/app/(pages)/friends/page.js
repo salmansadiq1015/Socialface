@@ -125,7 +125,7 @@ export default function Friends() {
 
   return (
     <UserLayout>
-      <div className="w-full h-screen overflow-hidden ">
+      <div className="w-full h-screen overflow-hidden  ">
         <div className="grid grid-cols-9">
           <div className=" col-span-2 sm:col-span-2 py-2 px-3 h-screen border-r dark:border-slate-700">
             <h2 className="  text-sm sm:text-xl font-semibold mb-3">Friends</h2>
@@ -296,13 +296,13 @@ export default function Friends() {
           </div>
           {/* Right Side */}
 
-          <div className="col-span-7  sm:col-span-7 py-4 px-2 sm:px-4 bg-white dark:bg-slate-950">
+          <div className="col-span-7 relative h-screen   sm:col-span-7 py-4 px-2 sm:px-4  bg-white dark:bg-slate-950 overflow-y-auto shidden">
             {active === "allUsers" ? (
-              <div className="py-1 px-1 sm:px-[2rem] w-full pb-7 h-screen overflow-y-auto shidden ">
+              <div className="py-1 px-3 sm:px-[1.5rem] w-full h-full pb-[6rem] overflow-y-auto shidden ">
                 <h1 className="text-lg sm:text-2xl font-semibold pb-4">
                   People you may know
                 </h1>
-                <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4  ">
+                <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-[1rem] sm:px-[1.3rem]">
                   {allUser &&
                     allUser?.map((user) => (
                       <div
@@ -361,9 +361,9 @@ export default function Friends() {
                 </div>
               </div>
             ) : active === "allfriends" ? (
-              <div className="py-1 px-1 sm:px-[2rem]">All Friends</div>
+              <div className="py-1 px-3 sm:px-[1.5rem]">All Friends</div>
             ) : active === "friendRequest" ? (
-              <div className="py-1 px-1 sm:px-[2rem]">
+              <div className="py-1 px-3 sm:px-[1.5rem]">
                 <RequestReceived
                   friendRequests={friendRequests}
                   setFriendRequests={setFriendRequests}
@@ -372,14 +372,14 @@ export default function Friends() {
                 />
               </div>
             ) : active === "sendRequest" ? (
-              <div className="py-1 px-1 sm:px-[2rem]">
+              <div className="py-1 px-3 sm:px-[1.5rem]">
                 <SendFriendRequest
                   friendRequests={friendRequests}
                   setFriendRequests={setFriendRequests}
                 />
               </div>
             ) : active === "followers" ? (
-              <div className="py-1 px-1 sm:px-[2rem]">
+              <div className="py-1 px-3 sm:px-[1.5rem]">
                 <Followers
                   followers={followers}
                   friendRequests={friendRequests}
@@ -388,7 +388,7 @@ export default function Friends() {
                 />
               </div>
             ) : (
-              <div className="py-1 px-1 sm:px-[2rem]">
+              <div className="py-1 px-3 sm:px-[1.5rem]">
                 <Following
                   following={following}
                   setFollowing={setFollowing}

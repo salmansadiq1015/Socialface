@@ -188,3 +188,27 @@ element.style {
 .dot-3 {
   animation-delay: 0.6s;
 }
+
+/* ----------Audio File--------- */
+audio {
+  appearance: none;
+  background: transparent;
+  width: 100%;
+}
+
+audio::-webkit-media-controls-panel {
+  background-color: orangered;
+  border-radius: 8px;
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-volume-slider,
+audio::-webkit-media-controls-mute-button,
+audio::-webkit-media-controls-fullscreen-button {
+  border-radius: 4px;
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-duration-display {
+  color: white;
+}

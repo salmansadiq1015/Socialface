@@ -29,7 +29,7 @@ export default function Following({ following, setFollowing, getAllUsers }) {
     }
   };
   return (
-    <div className="flex flex-col gap-4 w-full pb-7 h-screen overflow-y-auto shidden">
+    <div className="flex flex-col gap-4 w-full pb-[4rem] h-screen overflow-y-auto shidden">
       <div className="flex flex-col gap-1 w-full pb-4">
         <h1 className="text-lg sm:text-2xl font-semibold ">Following</h1>
         <span className="text-[15px] text-gray-600 dark:text-gray-300">
@@ -37,7 +37,7 @@ export default function Following({ following, setFollowing, getAllUsers }) {
         </span>
       </div>
       {following.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-[1rem] sm:px-[1.3rem]">
           {following &&
             following.map((user) => (
               <div

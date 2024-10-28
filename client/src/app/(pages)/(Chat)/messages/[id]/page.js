@@ -30,10 +30,23 @@ import MessageLoader from "@/app/LoadingSkelton/MessageLoader";
 import ChatLoader from "@/app/LoadingSkelton/ChatLoader";
 import { BsEmojiSunglasses } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
-import socketIO from "socket.io-client";
 import { useRouter } from "next/navigation";
 import SendCall from "@/app/components/Chat/SendCall";
 import ReceiveCall from "@/app/components/Chat/ReceiveCall";
+import { fileType } from "@/app/utils/CommonFunction";
+import { ImSpinner9 } from "react-icons/im";
+import { TbFileDownload } from "react-icons/tb";
+import { LuFileAudio } from "react-icons/lu";
+import { MdOutlineSlowMotionVideo } from "react-icons/md";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { IoIosImages } from "react-icons/io";
+import CreateGroupModel from "@/app/components/Chat/CreateGroupModel";
+import { MdOutlineModeEdit } from "react-icons/md";
+import { AiOutlineDelete } from "react-icons/ai";
+
+// Socket
+import socketIO from "socket.io-client";
+import Swal from "sweetalert2";
 const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -56,7 +69,15 @@ export default function Messages() {
   const [showEmoji, setShowEmoji] = useState(false);
   const closeEmoji = useRef(null);
   const router = useRouter();
-  const [call, setCall] = useState(false);
+  const [isShowSendCall, setIsShowSendCall] = useState(false);
+  const [isShowReceiveCall, setIsShowReceiveCall] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isGroup, setIsGroup] = useState(false);
+  const closeGroupModel = useRef(null);
+  const [groupId, setGroupId] = useState("");
+  const [callType, setCallType] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
   console.log("personalChats", personalChats);
 
@@ -336,6 +357,7 @@ export default function Messages() {
       );
 
       if (data) {
+        fetchMessageWithoutLoad();
         socketId.emit("NewMessageAdded", {
           content: message || "👍",
           contentType: type,
@@ -362,6 +384,7 @@ export default function Messages() {
       );
 
       if (data) {
+        fetchMessageWithoutLoad();
         socketId.emit("NewMessageAdded", {
           content: "👍",
           contentType: "like",
@@ -388,15 +411,224 @@ export default function Messages() {
     }
   }, [chatMessages]);
 
-  // Call Function
-  const handleCall = (type) => {
-    if (!selectedChat || !selectedChat._id) {
-      toast.error("No chat selected!");
-      return;
+  // ---------UpLoad File Data (Images, Video, Audio, Files)---------->
+
+  const handleSendfiles = async (content, mediaType) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/messages/create/message`,
+        {
+          content: content,
+          contentType: mediaType,
+          chatId: selectedChat._id,
+        }
+      );
+
+      if (data) {
+        fetchMessageWithoutLoad();
+        socketId.emit("NewMessageAdded", {
+          content: content,
+          contentType: mediaType,
+          chatId: selectedChat._id,
+          messageId: data._id,
+        });
+        setMessage("");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+      setLoading(false);
     }
-    // Navigate to the room with call type as a query parameter
-    router.push(`/calling/${selectedChat._id}?callType=${type}`);
   };
+
+  // Close Group
+  useEffect(() => {
+    const handleCloseGroup = (event) => {
+      if (
+        closeGroupModel.current &&
+        !closeGroupModel.current.contains(event.target)
+      ) {
+        setIsGroup(false);
+        setGroupId("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleCloseGroup);
+
+    return () => document.removeEventListener("mousedown", handleCloseGroup);
+  }, []);
+
+  // -------------------Handle send call ---------------------------
+  const handleCall = (callType) => {
+    if (selectedChat) {
+      const callData = {
+        selectedChatId: selectedChat._id,
+        senderId: auth.user._id,
+        receiverId:
+          selectedChat.users[0]._id === auth.user._id
+            ? selectedChat.users[1]._id
+            : selectedChat.users[0]._id,
+        callType: callType,
+        isGroup: selectedChat.isGroupChat,
+      };
+
+      // Send the call data to the server
+      socketId.emit("callUser", { selectedChatData: callData });
+      setIsShowSendCall(true);
+      setCallType(callType);
+
+      console.log("Calling...:", callData);
+    } else {
+      console.log("No chat selected!");
+    }
+  };
+
+  // call Received to Receiver
+  useEffect(() => {
+    // Listen for incoming call events
+    socketId.on("incomingCall", (callData) => {
+      const { selectedChatId, receiverId, callType, isGroup, senderUser } =
+        callData;
+
+      let filterChat = null;
+      if (receiverId === auth.user._id) {
+        setCallType(callType);
+        // Check if the incoming call is for a personal chat or group chat
+        if (!isGroup && personalChats?.length) {
+          filterChat = personalChats.find(
+            (item) => item._id === selectedChatId
+          );
+        } else if (isGroup && groupChats?.length) {
+          filterChat = groupChats.find((item) => item._id === selectedChatId);
+        }
+
+        if (filterChat) {
+          setSelectedChat(filterChat);
+          console.log("filterChat:", filterChat);
+        } else {
+          console.warn("No matching chat found for incoming call");
+        }
+      }
+
+      console.log(
+        `Receiver ID: ${receiverId}, Auth User ID: ${auth.user._id}`,
+        "selectedChatId:",
+        selectedChatId,
+        receiverId,
+        callType,
+        isGroup,
+        senderUser
+      );
+
+      // Check if the current user is the receiver of the call
+      if (receiverId === auth.user._id) {
+        console.log(selectedChat);
+        setIsShowReceiveCall(true);
+      }
+    });
+
+    // Cleanup the socket listener on component unmount
+    return () => {
+      socketId.off("incomingCall");
+    };
+
+    // eslint-disable-next-line
+  }, [socketId, auth.user]);
+
+  //<---------------- Delete Chat --------------->
+
+  const handleDeleteConfirmation = (chatId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this post!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteChat(chatId);
+        Swal.fire("Deleted!", "Your chat has been deleted.", "success");
+      }
+    });
+  };
+  const deleteChat = async (id) => {
+    try {
+      const data = await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/chats/delete/chat/${id}`
+      );
+      if (data) {
+        allChatsWIthoutload();
+        setPersonalChats((prevChats) =>
+          prevChats.filter((chat) => chat._id !== id)
+        );
+        setGroupChats((prevChats) =>
+          prevChats.filter((chat) => chat._id !== id)
+        );
+        const localChat = localStorage.removeItem("newChat");
+        setSelectedChat(null);
+        toast.success("Chat deleted successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  //<------------------ Handle Typing----------->
+
+  useEffect(() => {
+    const data = {
+      selectedChatId: selectedChat?._id,
+      userId:
+        selectedChat?.users[0]._id === auth?.user?._id
+          ? selectedChat?.users[1]?._id
+          : selectedChat?.users[0]?._id,
+      typing: true,
+    };
+    socketId.emit("startTyping", { data });
+
+    return () => {
+      socketId.off("startTyping");
+    };
+
+    // eslint-disable-next-line
+  }, [socketId]);
+
+  const handleTyping = () => {
+    setTyping(true);
+  };
+
+  const handleStopTyping = () => {
+    setTyping(false);
+  };
+
+  const handleChange = (e) => {
+    setMessage(e.target.value);
+    handleTyping();
+
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    setTypingTimeout(
+      setTimeout(() => {
+        handleStopTyping();
+      }, 300)
+    );
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
+
   return (
     <UserLayout title="SocialFace - Messages">
       <div className="relative w-full h-[100%] overflow-x-hidden ">
@@ -419,7 +651,7 @@ export default function Messages() {
               </h3>
 
               <span
-                onClick={() => setShow(false)}
+                onClick={() => setIsGroup(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Create New Group"
                 className="relative group p-2 bg-gradient-to-r  from-orange-500 to-yellow-500 text-white rounded-full hover:bg-gradient-to-l hover:from-orange-600 hover:to-yellow-600 dark:bg-gray-600/50 hover:dark:bg-gray-500/50"
@@ -478,7 +710,7 @@ export default function Messages() {
                 ) : (
                   <div className="flex flex-col gap-2 w-full h-full">
                     {activetab === "personal"
-                      ? personalChats.map((chat, i) => (
+                      ? personalChats?.map((chat, i) => (
                           <div
                             key={chat._id}
                             onClick={() => {
@@ -487,6 +719,7 @@ export default function Messages() {
                                 "newChat",
                                 JSON.stringify(chat)
                               );
+                              setShow(false);
                             }}
                             className="px-2 py-[.4rem] cursor-pointer overflow-hidden flex items-center justify-between gap-1 bg-gray-100 hover:bg-orange-50 dark:bg-slate-800 hover:dark:bg-slate-700 rounded-md hover:shadow-md border border-gray-200 dark:border-slate-700"
                           >
@@ -526,7 +759,37 @@ export default function Messages() {
                                     : `${chat?.users[1]?.firstName} ${chat?.users[1]?.lastName}`}
                                 </span>
                                 <span className="text-gray-600 text-[12px] dark:text-gray-300 truncate max-w-[10rem]">
-                                  {chat?.latestMessage?.content}
+                                  {chat?.latestMessage?.contentType ===
+                                  "text" ? (
+                                    chat?.latestMessage?.content
+                                  ) : chat?.latestMessage?.contentType ===
+                                    "Image" ? (
+                                    <span className="flex items-center gap-1">
+                                      <IoIosImages className="h-4 w-4" /> Image
+                                    </span>
+                                  ) : chat?.latestMessage?.contentType ===
+                                    "Video" ? (
+                                    <span className="flex items-center gap-1">
+                                      <MdOutlineSlowMotionVideo className="h-4 w-4" />{" "}
+                                      Video
+                                    </span>
+                                  ) : chat?.latestMessage?.contentType ===
+                                    "Audio" ? (
+                                    <span className="flex items-center gap-1">
+                                      <LuFileAudio className="h-4 w-4" /> Audio
+                                    </span>
+                                  ) : chat?.latestMessage?.contentType ===
+                                    "like" ? (
+                                    "👍"
+                                  ) : chat?.latestMessage?.contentType ===
+                                    "File" ? (
+                                    <span className="flex items-center gap-1">
+                                      <IoDocumentTextOutline className="h-4 w-4" />{" "}
+                                      Document file
+                                    </span>
+                                  ) : (
+                                    ""
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -537,7 +800,7 @@ export default function Messages() {
                             )}
                           </div>
                         ))
-                      : groupChats.map((chat, i) => (
+                      : groupChats?.map((chat, i) => (
                           <div
                             key={chat._id}
                             onClick={() => {
@@ -546,6 +809,7 @@ export default function Messages() {
                                 "newChat",
                                 JSON.stringify(chat)
                               );
+                              setShow(false);
                             }}
                             className="px-2 py-[.4rem] cursor-pointer flex overflow-hidden items-center justify-between gap-1 bg-gray-100 hover:bg-orange-50 dark:bg-slate-800 hover:dark:bg-slate-700 rounded-md hover:shadow-md border border-gray-200 dark:border-slate-700"
                           >
@@ -611,10 +875,10 @@ export default function Messages() {
           {selectedChat ? (
             <div className="relative col-span-11 custom-md:col-span-8 h-full bg-orange-500 ">
               {!show && (
-                <div className="flex custom-md:hidden absolute top-1 left-1 z-10">
+                <div className="flex custom-md:hidden absolute top-2 left-[2px] z-10">
                   <span
                     onClick={() => setShow(true)}
-                    className="p-1 bg-gray-100/60 rounded-full hover:bg-gray-200/70 dark:bg-gray-600/50 hover:dark:bg-gray-500/50"
+                    className="p-[2px] bg-gray-100/60 rounded-full hover:bg-gray-200/70 dark:bg-gray-600/50 hover:dark:bg-gray-500/50"
                   >
                     <FiChevronsRight className="h-5 w-5" />
                   </span>
@@ -624,7 +888,7 @@ export default function Messages() {
                 {/* Header Section */}
                 <div className="h-[3.2rem] flex items-center justify-between bg-gradient-to-r from-orange-500 via-orange-500 to-yellow-500 px-2 py-2">
                   {/* UserInfo */}
-                  <div className="flex items-center gap-1 ">
+                  <div className="flex items-center gap- ml-[1.5rem] 1 sm:ml-0 ">
                     <div className="relative w-[2.6rem] h-[2.6rem] rounded-full overflow-hidden">
                       <Image
                         src={
@@ -639,7 +903,7 @@ export default function Messages() {
                         className="rounded-full ring-2 ring-green-200 dark:ring-green-200"
                       />
                     </div>
-                    <div className="flex flex-col leading-tight ">
+                    <div className="flex flex-col leading-tight ml-1 ">
                       <span className="text-[17px] font-medium text-gray-50">
                         {selectedChat?.isGroupChat
                           ? selectedChat?.chatName
@@ -647,12 +911,14 @@ export default function Messages() {
                           ? `${selectedChat?.users[0]?.firstName} ${selectedChat?.users[0]?.lastName}`
                           : `${selectedChat?.users[1]?.firstName} ${selectedChat?.users[1]?.lastName}`}
                       </span>
-                      <span className="text-green-600 text-[13px]">
-                        Typing
-                        <span className="dot-1 font-bold text-[18px]">.</span>
-                        <span className="dot-2 font-bold text-[18px]">.</span>
-                        <span className="dot-3 font-bold text-[18px]">.</span>
-                      </span>
+                      {typing && (
+                        <span className="text-sky-600 text-[13px]">
+                          Typing
+                          <span className="dot-1 font-bold text-[18px]">.</span>
+                          <span className="dot-2 font-bold text-[18px]">.</span>
+                          <span className="dot-3 font-bold text-[18px]">.</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                   {/* Call Info */}
@@ -661,8 +927,9 @@ export default function Messages() {
                       data-tooltip-id="my-tooltip"
                       data-tooltip-content="Start a voice call"
                       className="p-1 bg-gray-100/80 rounded-full hover:bg-gray-200/70"
-                      onClick={() => setCall(true)}
-                      // handleCall("audio")
+                      onClick={() => {
+                        handleCall("audio");
+                      }}
                     >
                       <MdWifiCalling3 className="h-5 w-5 text-orange-500 hover:text-orange-600 cursor-pointer" />
                     </span>
@@ -674,6 +941,7 @@ export default function Messages() {
                     >
                       <MdVideoCall className="h-5 w-5 text-orange-500 hover:text-orange-600 cursor-pointer" />
                     </span>
+                    {/* ---- Setting Info---- */}
                     <span
                       data-tooltip-id="my-tooltip"
                       data-tooltip-content="Conversation Information"
@@ -702,31 +970,34 @@ export default function Messages() {
                             Close Conversation
                           </span>
                         </div>
+                        {selectedChat.isGroupChat === true && (
+                          <div
+                            onClick={() => {
+                              setIsGroup(true);
+                              setGroupId(selectedChat._id);
+                            }}
+                            className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300"
+                          >
+                            <span>
+                              <MdOutlineModeEdit className="h-5 w-5 " />
+                            </span>
+                            <span className="text-[15px] font-medium">
+                              Edit Group
+                            </span>
+                          </div>
+                        )}
                         {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
+                        <div
+                          onClick={() =>
+                            handleDeleteConfirmation(selectedChat._id)
+                          }
+                          className="flex items-center gap-1 rounded-sm hover:text-red-600 border py-1 px-2 cursor-pointer hover:border-red-500 transition-all duration-300"
+                        >
                           <span>
-                            <MdOutlineAudiotrack className="h-5 w-5 " />
+                            <AiOutlineDelete className="h-5 w-5 " />
                           </span>
                           <span className="text-[15px] font-medium">
-                            Upload Audio
-                          </span>
-                        </div>
-                        {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
-                          <span>
-                            <AiTwotoneCamera className="h-5 w-5 " />
-                          </span>
-                          <span className="text-[15px] font-medium">
-                            Upload Videos
-                          </span>
-                        </div>
-                        {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
-                          <span>
-                            <CgFileDocument className="h-5 w-5 " />
-                          </span>
-                          <span className="text-[15px] font-medium">
-                            Upload Files
+                            Delete
                           </span>
                         </div>
                       </div>
@@ -773,8 +1044,63 @@ export default function Messages() {
                             >
                               <p>{message?.content}</p>
                             </div>
-                          ) : (
+                          ) : message.contentType === "like" ? (
                             <div className="text-4xl">{message?.content}</div>
+                          ) : message.contentType === "Image" ? (
+                            <a
+                              href={message?.content}
+                              download
+                              target="_blank"
+                              className="relative mt-4  w-[14rem] h-[10rem] overflow-hidden cursor-pointer rounded-lg shadow-lg"
+                            >
+                              <Image
+                                src={message?.content}
+                                alt="Sent image"
+                                layout="fill"
+                                objectFit="cover"
+                                className="rounded-lg"
+                              />
+                            </a>
+                          ) : message.contentType === "Video" ? (
+                            <div className="relative mt-4 dark:bg-slate-800/80 border dark:border-gray-700 w-[14rem] h-[10rem] overflow-hidden rounded-lg shadow-lg">
+                              <video
+                                controls
+                                className="w-full h-full rounded-lg"
+                              >
+                                <source
+                                  src={message?.content}
+                                  type="video/mp4"
+                                />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          ) : message.contentType === "Audio" ? (
+                            <div className="flex items-center mt-4 w-[14rem] h-[3rem] p-1  rounded-lg">
+                              <audio
+                                controls
+                                className="w-full h-full bg-transparent rounded-lg"
+                              >
+                                <source
+                                  src={message?.content}
+                                  type="audio/mpeg"
+                                />
+                                Your browser does not support the audio element.
+                              </audio>
+                            </div>
+                          ) : (
+                            <div className="mt-4">
+                              <a
+                                href={message?.content}
+                                download
+                                target="_blank"
+                                className="flex items-center gap-2 py-[.5rem] px-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-lg shadow-md"
+                              >
+                                <TbFileDownload className="h-5 w-5 text-white" />
+                                <span className=" text-[14px]">
+                                  Download File
+                                </span>
+                              </a>
+                            </div>
                           )}
                         </div>
                       ))}
@@ -801,41 +1127,110 @@ export default function Messages() {
                         ref={closeUploads}
                         className="absolute top-[-11.5rem] right-[-14rem] w-[14rem] flex flex-col gap-2 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 py-3 px-3 z-10"
                       >
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
+                        <label
+                          htmlFor="images"
+                          className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300"
+                        >
                           <span>
                             <PiImageDuotone className="h-5 w-5 " />
                           </span>
                           <span className="text-[15px] font-medium">
                             Upload Images
                           </span>
-                        </div>
+
+                          <input
+                            type="file"
+                            id="images"
+                            accept="image/*"
+                            onChange={(e) => {
+                              fileType(
+                                e.target.files[0],
+                                handleSendfiles,
+                                setLoading,
+                                setIsShow
+                              );
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                         {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
+                        <label
+                          htmlFor="audio"
+                          className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300"
+                        >
                           <span>
                             <MdOutlineAudiotrack className="h-5 w-5 " />
                           </span>
                           <span className="text-[15px] font-medium">
                             Upload Audio
                           </span>
-                        </div>
+                          <input
+                            type="file"
+                            id="audio"
+                            accept="audio/*"
+                            onChange={(e) => {
+                              fileType(
+                                e.target.files[0],
+                                handleSendfiles,
+                                setLoading,
+                                setIsShow
+                              );
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                         {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
+                        <label
+                          htmlFor="videos"
+                          className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300"
+                        >
                           <span>
                             <AiTwotoneCamera className="h-5 w-5 " />
                           </span>
                           <span className="text-[15px] font-medium">
                             Upload Videos
                           </span>
-                        </div>
+                          <input
+                            type="file"
+                            id="videos"
+                            accept="video/*"
+                            onChange={(e) => {
+                              fileType(
+                                e.target.files[0],
+                                handleSendfiles,
+                                setLoading,
+                                setIsShow
+                              );
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                         {/*  */}
-                        <div className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300">
+                        <label
+                          htmlFor="doucments"
+                          className="flex items-center gap-1 rounded-sm hover:text-orange-600 border py-1 px-2 cursor-pointer hover:border-orange-500 transition-all duration-300"
+                        >
                           <span>
                             <CgFileDocument className="h-5 w-5 " />
                           </span>
                           <span className="text-[15px] font-medium">
                             Upload Files
                           </span>
-                        </div>
+                          <input
+                            type="file"
+                            id="doucments"
+                            accept=".pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .txt, .zip"
+                            onChange={(e) => {
+                              fileType(
+                                e.target.files[0],
+                                handleSendfiles,
+                                setLoading,
+                                setIsShow
+                              );
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     )}
                   </div>
@@ -864,8 +1259,9 @@ export default function Messages() {
                       <input
                         type="text"
                         autoFocus
+                        disabled={loading}
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={handleChange}
                         placeholder="Type your message here..."
                         className="w-full h-full px-4 rounded-[2rem] border outline-none focus:border-orange-500"
                       />
@@ -881,17 +1277,25 @@ export default function Messages() {
                           />
                         </button>
                       ) : (
-                        <span
-                          data-tooltip-id="my-tooltip"
-                          data-tooltip-content="Send a like"
-                          onClick={() => {
-                            handleSendLike();
-                          }}
-                        >
-                          <AiFillLike
-                            className={`h-6 w-6 text-orange-600 cursor-pointer`}
-                          />
-                        </span>
+                        <>
+                          {loading ? (
+                            <span className="">
+                              <ImSpinner9 className="h-6 w-6 animate-spin text-orange-500" />
+                            </span>
+                          ) : (
+                            <span
+                              data-tooltip-id="my-tooltip"
+                              data-tooltip-content="Send a like"
+                              onClick={() => {
+                                handleSendLike();
+                              }}
+                            >
+                              <AiFillLike
+                                className={`h-6 w-6 text-orange-600 cursor-pointer`}
+                              />
+                            </span>
+                          )}
+                        </>
                       )}
                     </form>
                   </div>
@@ -899,21 +1303,43 @@ export default function Messages() {
               </div>
             </div>
           ) : (
-            <NotChat />
+            <NotChat setShow={setShow} show={show} />
           )}
         </div>
 
         {/* ------------Send Call------- */}
-        {/* {call && (
+        {isShowSendCall && (
           <div className="fixed top-0 left-0 w-full h-screen overflow-hidden z-[99999] bg-white dark:bg-slate-950">
-            <SendCall selectedChat={selectedChat} setCall={setCall} />
+            <SendCall
+              selectedChat={selectedChat}
+              setIsShowSendCall={setIsShowSendCall}
+              callType={callType}
+            />
           </div>
-        )} */}
+        )}
 
         {/* ----------Pick Call------- */}
-        {call && (
+        {isShowReceiveCall && (
           <div className="fixed top-0 left-0 w-full h-screen overflow-hidden z-[99999] bg-white dark:bg-slate-950">
-            <ReceiveCall selectedChat={selectedChat} setCall={setCall} />
+            <ReceiveCall
+              setIsShowReceiveCall={setIsShowReceiveCall}
+              selectedChat={selectedChat}
+              callType={callType}
+            />
+          </div>
+        )}
+
+        {/* ----------Create Group------- */}
+        {isGroup && (
+          <div className="fixed top-0 left-0 w-full h-screen overflow-hidden z-[99999] bg-white/70 dark:bg-slate-950/70 flex items-center justify-center">
+            <CreateGroupModel
+              setIsGroup={setIsGroup}
+              allContacts={allContacts}
+              allChats={allChats}
+              groupId={groupId}
+              setGroupId={setGroupId}
+              closeGroupModel={closeGroupModel}
+            />
           </div>
         )}
       </div>

@@ -44,7 +44,7 @@ export default function Watch() {
     <UserLayout title="SocialFace - Home">
       <div className="w-full h-full min-h-screen bg-white dark:bg-gray-950 overflow-hidden">
         <div className="grid grid-cols-10">
-          <div className=" hidden sm:flex sm:col-span-3 bg-sky-400 ">1</div>
+          <div className=" hidden sm:flex sm:col-span-3  ">Detail</div>
           <div className="col-span-10 sm:col-span-7 w-full h-screen ">
             <div class="w-full flex flex-col gap-4 h-screen pb-[6rem] sm:pb-[4rem] py-4 px-1 border-l border-gray-200 dark:border-gray-600 border-r overflow-y-scroll shidden">
               <Posts

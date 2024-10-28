@@ -17,7 +17,7 @@ import { FiLoader } from "react-icons/fi";
 import { LuPauseCircle } from "react-icons/lu";
 import { FiPlayCircle } from "react-icons/fi";
 
-export default function CreatePost({ getAllPost }) {
+export default function CreatePost({ getPosts }) {
   const { auth } = useAuth();
   const [selectedEmoji, setSelectedEmoji] = useState(null);
   const [show, setShow] = useState(false);
@@ -63,8 +63,8 @@ export default function CreatePost({ getAllPost }) {
           content,
         }
       );
-      getAllPost();
       if (data) {
+        getPosts();
         toast.success("New Post Created!");
         setShow(false);
         setContent("");

@@ -29,7 +29,7 @@ const storage = multerS3({
 
 function checkFileType(file, cb) {
   const fileTypes =
-    /jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp3|mp4|mov|mpeg-4/;
+    /jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp3|wav|ogg|aac|mp4|mov|mpeg-4|avi|wmv|flv|mkv|webm|zip/;
 
   const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
 
@@ -47,6 +47,9 @@ function checkFileType(file, cb) {
 }
 
 const upload = multer({
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
   storage: storage,
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);

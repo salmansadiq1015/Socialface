@@ -32,7 +32,7 @@ const SocketHandler = () => {
         socketId.disconnect();
       };
     }
-  }, [auth?.user?._id, getAllUsers]);
+  }, [auth?.user]);
 
   return null;
 };

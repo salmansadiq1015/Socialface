@@ -48,6 +48,19 @@ export default function Home() {
     getAllPost();
   }, []);
 
+  // Get Post without Load
+  const getPosts = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/post/get/posts`
+      );
+      setPosts(data?.posts);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
   // Get ALl Users/Contacts
   const getAllUsers = async () => {
     setLoadUsers(true);
@@ -85,13 +98,13 @@ export default function Home() {
                 <Stories user={auth.user} />
               </div>
               {/* Create Post Section */}
-              <CreatePost user={auth.user} getAllPost={getAllPost} />
+              <CreatePost getPosts={getPosts} />
               {/* Post Section */}
               <Posts
                 user={auth.user}
                 loading={loading}
                 posts={posts}
-                getAllPost={getAllPost}
+                getAllPost={getPosts}
                 page={"home"}
               />
             </div>
