@@ -212,3 +212,14 @@ audio::-webkit-media-controls-current-time-display,
 audio::-webkit-media-controls-duration-display {
   color: white;
 }
+
+/* -----------Profile Page--------- */
+.transition-opacity {
+  transition: opacity 0.3s ease;
+}
+.opacity-0 {
+  opacity: 0;
+}
+.opacity-100 {
+  opacity: 1;
+}

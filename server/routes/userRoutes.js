@@ -13,6 +13,7 @@ import {
   registerUser,
   resetPassword,
   sendFriendRequest,
+  socialAuth,
   unfollowUser,
   updateCoverImage,
   updatePassword,
@@ -38,6 +39,9 @@ router.post("/email_verification", verificationUser);
 
 // Login user
 router.post("/login_user", loginUser);
+
+// Social Auth
+router.post("/social/auth", socialAuth);
 
 // Update Profile
 router.patch("/update/userProfile/:id", updateProfile);

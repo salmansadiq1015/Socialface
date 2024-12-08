@@ -239,6 +239,52 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// Social Auth
+export const socialAuth = async (req, res) => {
+  try {
+    const { email, firstName, profilePicture } = req.body;
+
+    // console.log("Login Info:", email, firstName, profilePicture);
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      // Create new user if they don't exist
+      const newUser = await userModel.create({
+        email,
+        firstName,
+        profilePicture,
+      });
+      user = newUser;
+    }
+
+    // Generate token for the user
+    const token = jwt.sign(
+      { id: user._id, user: user },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Exclude password from response
+    const { password, ...userData } = user._doc;
+
+    // Send response
+    res.status(200).send({
+      success: true,
+      message: "Login successfully!",
+      user: userData,
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while social login!",
+      error,
+    });
+  }
+};
+
 // Update Profile
 export const updateProfile = async (req, res) => {
   try {

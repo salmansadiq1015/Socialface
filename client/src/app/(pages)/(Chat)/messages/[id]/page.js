@@ -77,9 +77,25 @@ export default function Messages() {
   const [groupId, setGroupId] = useState("");
   const [callType, setCallType] = useState("");
   const [typing, setTyping] = useState(false);
-  const [typingTimeout, setTypingTimeout] = useState(null);
-
+  const [isTyping, setIsTyping] = useState(false);
   console.log("personalChats", personalChats);
+
+  // Socket.io
+  useEffect(() => {
+    socketId.on("typing", (data) => {
+      setIsTyping(true);
+    });
+
+    socketId.on("stopTyping", (data) => {
+      setIsTyping(false);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socketId.off("typing");
+      socketId.off("stopTyping");
+    };
+  }, [socketId]);
 
   useEffect(() => {
     setIsActive(6);
@@ -258,6 +274,7 @@ export default function Messages() {
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/v1/messages/fetch/messages/${selectedChat._id}`
       );
       if (data) {
+        socketId.emit("join chat", selectedChat._id);
         setChatMessages(data.messages);
         setMessageLoad(false);
       }
@@ -285,6 +302,7 @@ export default function Messages() {
       );
       if (data) {
         setChatMessages(data.messages);
+        socketId.emit("join chat", selectedChat._id);
       }
     } catch (error) {
       console.log(error);
@@ -580,54 +598,26 @@ export default function Messages() {
 
   //<------------------ Handle Typing----------->
 
-  useEffect(() => {
-    const data = {
-      selectedChatId: selectedChat?._id,
-      userId:
-        selectedChat?.users[0]._id === auth?.user?._id
-          ? selectedChat?.users[1]?._id
-          : selectedChat?.users[0]?._id,
-      typing: true,
-    };
-    socketId.emit("startTyping", { data });
-
-    return () => {
-      socketId.off("startTyping");
-    };
-
-    // eslint-disable-next-line
-  }, [socketId]);
-
-  const handleTyping = () => {
-    setTyping(true);
-  };
-
-  const handleStopTyping = () => {
-    setTyping(false);
-  };
-
-  const handleChange = (e) => {
+  // Typing Handler
+  const typingHandler = (e) => {
     setMessage(e.target.value);
-    handleTyping();
 
-    if (typingTimeout) {
-      clearTimeout(typingTimeout);
+    // Typing Indicator login
+    if (!typing) {
+      setTyping(true);
+      socketId.emit("typing", selectedChat._id);
     }
-
-    setTypingTimeout(
-      setTimeout(() => {
-        handleStopTyping();
-      }, 300)
-    );
-  };
-
-  useEffect(() => {
-    return () => {
-      if (typingTimeout) {
-        clearTimeout(typingTimeout);
+    let lastTypingTime = new Date().getTime();
+    var timerLenght = 1500;
+    setTimeout(() => {
+      var timeNow = new Date().getTime();
+      var timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLenght && typing) {
+        socketId.emit("stop typing", selectedChat._id);
+        setTyping(false);
       }
-    };
-  }, [typingTimeout]);
+    }, timerLenght);
+  };
 
   return (
     <UserLayout title="SocialFace - Messages">
@@ -911,7 +901,7 @@ export default function Messages() {
                           ? `${selectedChat?.users[0]?.firstName} ${selectedChat?.users[0]?.lastName}`
                           : `${selectedChat?.users[1]?.firstName} ${selectedChat?.users[1]?.lastName}`}
                       </span>
-                      {typing && (
+                      {isTyping && (
                         <span className="text-sky-600 text-[13px]">
                           Typing
                           <span className="dot-1 font-bold text-[18px]">.</span>
@@ -1261,7 +1251,7 @@ export default function Messages() {
                         autoFocus
                         disabled={loading}
                         value={message}
-                        onChange={handleChange}
+                        onChange={typingHandler}
                         placeholder="Type your message here..."
                         className="w-full h-full px-4 rounded-[2rem] border outline-none focus:border-orange-500"
                       />

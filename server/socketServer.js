@@ -29,6 +29,12 @@ export const initialSocketServer = (server) => {
       console.error("Error updating user's online status:", error);
     }
 
+    // Join Room
+    socket.on("join chat", (room) => {
+      socket.join(room);
+      console.log("User join room:", room);
+    });
+
     //------------------------- Listen for new message event--------------->
     socket.on("NewMessageAdded", (data) => {
       console.log("New Message Added: ", data);
@@ -37,21 +43,16 @@ export const initialSocketServer = (server) => {
 
     // ----------------------------Handle Typing---------------------------->
 
-    // Listen for typing and stopTyping events
-    socket.on("startTyping", (data) => {
-      socket.to(data.selectedChatId).emit("typing", {
-        selectedChatId: data.selectedChatId,
-        userId: data.userId,
-        isTyping: true,
-      });
+    // Typing
+    socket.on("typing", (room) => {
+      console.log(" start Troom:", room);
+      socket.in(room).emit("typing");
     });
+    
+    socket.on("stop typing", (room) => {
+      console.log(" stop Troom:", room);
 
-    socket.on("stopTyping", (data) => {
-      socket.to(data.selectedChatId).emit("typing", {
-        selectedChatId: data.selectedChatId,
-        userId: data.userId,
-        isTyping: false,
-      });
+      socket.in(room).emit("stop typing");
     });
 
     // -----------------------------Handle Calling-------------------->

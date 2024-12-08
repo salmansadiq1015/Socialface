@@ -60,7 +60,6 @@ const AuthProvider = ({ children }) => {
   }, [allContacts, auth]);
 
   useEffect(() => {
-    console.log("user", user);
     if (allContacts && user) {
       const friendList = allContacts.filter((item) =>
         user.following.includes(item._id)
@@ -71,6 +70,7 @@ const AuthProvider = ({ children }) => {
     }
   }, [allContacts, user]);
 
+  // ------------------Update User Info----------->
   // const getUserDetail = async (id) => {
   //   if (!id) {
   //     return;
@@ -81,18 +81,16 @@ const AuthProvider = ({ children }) => {
   //     );
 
   //     const updateAuthData = {
-  //       user: { ...data.user },
+  //       user: data.user,
   //       token: auth.token,
   //     };
 
-  //     // Save the updated auth data to localStorage
+  //     console.log("updateAuthData:", updateAuthData);
+
   //     localStorage.setItem("auth", JSON.stringify(updateAuthData));
 
   //     // Update the auth state
-  //     setAuth((prevAuth) => ({
-  //       ...prevAuth,
-  //       ...updateAuthData,
-  //     }));
+  //     setAuth({ ...auth, user: data.user, token: auth.token });
   //   } catch (error) {
   //     console.log(error);
   //   }

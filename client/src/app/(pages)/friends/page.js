@@ -17,6 +17,7 @@ import SendFriendRequest from "@/app/components/Friends/SendFriendRequest";
 import RequestReceived from "@/app/components/Friends/RequestReceived";
 import Followers from "@/app/components/Friends/Followers";
 import Following from "@/app/components/Friends/Following";
+import { useRouter } from "next/navigation";
 
 export default function Friends() {
   const [active, setActive] = useState("allUsers");
@@ -30,6 +31,7 @@ export default function Friends() {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const router = useRouter();
 
   console.log("followers:", followers);
   console.log("following:", following);
@@ -309,21 +311,30 @@ export default function Friends() {
                         className="border cursor-pointer  overflow-hidden shadow hover:shadow-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 hover:dark:bg-slate-800 rounded-md dark:border-slate-700 "
                         key={user._id}
                       >
-                        <div className="relative w-full h-[8rem]">
+                        <div
+                          className="relative w-full h-[8rem]"
+                          onClick={() => router.push(`/profile/${user?._id}`)}
+                        >
                           <Image
-                            src={user?.profilePicture}
+                            src={
+                              user?.profilePicture
+                                ? user?.profilePicture
+                                : "/profile.png"
+                            }
                             layout="fill"
                             alt="Profile"
                             className="h-full w-full"
                           />
                         </div>
                         <div className="flex flex-col gap-4 py-2 px-4">
-                          <h4 className="text-[16px] font-medium">
-                            {user?.firstName + " " + user?.lastName}
+                          <h4
+                            className="text-[16px] font-medium"
+                            onClick={() => router.push(`/profile/${user?._id}`)}
+                          >
+                            {`${user?.firstName}  ${
+                              user.lastName ? user.lastName : ""
+                            }`}
                           </h4>
-                          {/* <button className="bg-orange-500/20 text-orange-600 hover:bg-orange-600 hover:text-white transition-all duration-200 rounded-md w-full py-2 ">
-                            Add Friend
-                          </button> */}
                           {friendRequests.includes(user._id) ? (
                             <button
                               disabled={cancelLoad}

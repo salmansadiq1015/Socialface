@@ -52,6 +52,7 @@ import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/navigation";
 import { MdOndemandVideo } from "react-icons/md";
 import { HiUserGroup } from "react-icons/hi2";
+import { signOut } from "next-auth/react";
 
 // const products = [
 //   {
@@ -102,6 +103,7 @@ export default function Header() {
     router.push("/authentication");
     localStorage.removeItem("auth");
     setAuth({ ...auth, user: null, token: "" });
+    signOut();
     toast.success("Logout successfully!");
   };
 

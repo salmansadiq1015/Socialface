@@ -1,6 +1,7 @@
 import { useAuth } from "@/app/context/authContext";
 import axios from "axios";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { LuLoader } from "react-icons/lu";
@@ -16,6 +17,7 @@ export default function RequestReceived({
   const [userId, setUserId] = useState("");
   const [cancelLoad, setCancelLoad] = useState(false);
   const [approvedLoad, setApprovedLoad] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (allContacts.length === 0 || !user) return;
@@ -104,17 +106,29 @@ export default function RequestReceived({
                 className="border cursor-pointer overflow-hidden shadow hover:shadow-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 hover:dark:bg-slate-800 rounded-md dark:border-slate-700"
                 key={user._id}
               >
-                <div className="relative w-full h-[8rem]">
+                <div
+                  className="relative w-full h-[8rem]"
+                  onClick={() => router.push(`/profile/${user?._id}`)}
+                >
                   <Image
-                    src={user?.profilePicture}
+                    src={
+                      user?.profilePicture
+                        ? user?.profilePicture
+                        : "/profile.png"
+                    }
                     layout="fill"
                     alt="Profile"
                     className="h-full w-full"
                   />
                 </div>
                 <div className="flex flex-col gap-4 py-2 px-4">
-                  <h4 className="text-[16px] font-medium">
-                    {user?.firstName + " " + user?.lastName}
+                  <h4
+                    className="text-[16px] font-medium"
+                    onClick={() => router.push(`/profile/${user?._id}`)}
+                  >
+                    {`${user?.firstName}  ${
+                      user.lastName ? user.lastName : ""
+                    }`}
                   </h4>
 
                   <button

@@ -18,7 +18,11 @@ export default function HomeLeftSide() {
         <div className="w-[2.8rem] h-[2.8rem]">
           <div className="relative w-[2.6rem] h-[2.6rem] bg-white dark:bg-gray-800 rounded-full border border-orange-600 overflow-hidden z-20">
             <Image
-              src={user ? user?.profilePicture : auth?.user?.profilePicture}
+              src={
+                user
+                  ? user?.profilePicture || "/profile.png"
+                  : auth?.user?.profilePicture || "/profile.png"
+              }
               alt="Profile"
               layout="fill"
               className="rounded-lg"
@@ -28,8 +32,10 @@ export default function HomeLeftSide() {
         </div>
         <h4 className="text-[17px] font-medium">
           {user
-            ? user?.firstName + " " + user?.lastName
-            : auth?.user?.firstName + " " + auth?.user?.lastName}
+            ? `${user?.firstName || ""} ${user?.lastName || ""}`.trim()
+            : `${auth?.user?.firstName || ""} ${
+                auth?.user?.lastName || ""
+              }`.trim()}
         </h4>
       </Link>
       {/* FRIENDS */}

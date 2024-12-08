@@ -1,6 +1,7 @@
 "use client";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/authContext";
 import { ThemeProvider } from "./utils/theme-provider";
@@ -78,19 +79,21 @@ export default function RootLayout({ children }) {
 
       <body className={inter.className}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SocketHandler />
-            <main className="dark:bg-gray-950 w-full min-h-screen overflow-x-hidden  dark:text-white text-black">
-              {children}
-              <Toaster />
-              <Tooltip
-                id="my-tooltip"
-                place="bottom"
-                effect="solid"
-                className="!bg-gradient-to-r !from-orange-500 !via-orange-500 !to-yellow-500 !text-white !text-[11px] !py-1 !px-2"
-              />
-            </main>
-          </ThemeProvider>
+          <SessionProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <SocketHandler />
+              <main className="dark:bg-gray-950 w-full min-h-screen overflow-x-hidden  dark:text-white text-black">
+                {children}
+                <Toaster />
+                <Tooltip
+                  id="my-tooltip"
+                  place="bottom"
+                  effect="solid"
+                  className="!bg-gradient-to-r !from-orange-500 !via-orange-500 !to-yellow-500 !text-white !text-[11px] !py-1 !px-2"
+                />
+              </main>
+            </ThemeProvider>
+          </SessionProvider>
         </AuthProvider>
       </body>
     </html>
