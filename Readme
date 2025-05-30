@@ -1,1 +1,161 @@
-This Project is created in Mern Stack, Next Js, Tailwind CSS, Web Socket, WebRTC
+Here's a professional `README.md` file for your **Socialface** project:
+
+---
+
+````markdown
+# Socialface
+
+**Socialface** is a powerful, AI-enhanced full-stack social media platform inspired by Facebook. It offers real-time communication, intelligent chatbots, audio/video calling, media sharing, and secure authentication—built with modern web technologies.
+
+🚀 [Live Demo](https://socialface-eight.vercel.app/)  
+📦 [GitHub Repository](https://github.com/salmansadiq1015/Socialface)
+
+---
+
+## 📌 Features
+
+- ✅ **Authentication & Authorization**  
+  - JWT + NextAuth integration  
+  - Role-Based Access Control (RBAC)
+
+- 💬 **Real-Time Chat & Typing Indicators**  
+  - Private and group messaging with WebSockets  
+  - Real-time typing and seen statuses
+
+- 📞 **Audio/Video Calling**  
+  - ZegoCloud-powered one-on-one and group calls  
+  - Audio-only & video modes
+
+- 🤖 **AI Chatbot & Document Q&A**  
+  - Chat with AI using OpenAI  
+  - Upload PDFs and get answers using LLM embeddings
+
+- 📸 **Media & Stories**  
+  - Upload and preview images, videos, and audio files  
+  - Auto-delete stories after 20 hours
+
+- 📈 **Analytics Dashboard**  
+  - Real-time insights on user engagement  
+  - Admin panel for data management
+
+- 💰 **Payments Integration**  
+  - Stripe and PayPal for donations & in-app purchases
+
+- ⚡ **Performance & Deployment**  
+  - Redis for caching  
+  - Deployed on Vercel + AWS + GCP
+
+---
+
+## 🛠️ Tech Stack
+
+**Frontend:**
+- Next.js
+- React.js
+- Tailwind CSS
+- Redux Toolkit
+- Framer Motion
+
+**Backend:**
+- Node.js
+- Express.js
+- MongoDB
+- Redis
+- WebSockets (Socket.io)
+
+**Third-Party APIs:**
+- OpenAI (Chatbot, PDF QA)
+- ZegoCloud (Audio/Video Calling)
+- Twilio (Messaging Support)
+- Stripe / PayPal (Payments)
+- Google APIs (Auth, Maps, etc.)
+
+**Auth & Security:**
+- JWT
+- NextAuth.js
+- Role-Based Access Control (RBAC)
+
+---
+
+## 🔧 Installation
+
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/salmansadiq1015/Socialface.git
+   cd Socialface
+````
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Set up environment variables**
+
+   Create `.env.local` file and add your credentials:
+
+   ```env
+   MONGODB_URI=
+   JWT_SECRET=
+   NEXTAUTH_SECRET=
+   NEXTAUTH_URL=
+   STRIPE_SECRET_KEY=
+   STRIPE_PUBLIC_KEY=
+   OPENAI_API_KEY=
+   ZEGO_APP_ID=
+   ZEGO_SERVER_SECRET=
+   REDIS_URL=
+   ```
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📸 Screenshots
+
+| Home Feed                            | AI Chatbot                              | Video Call                        |
+| ------------------------------------ | --------------------------------------- | --------------------------------- |
+| ![feed](./public/social/social1.png) | ![chatbot](./public/social/chatbot.png) | ![call](./public/social/call.png) |
+
+---
+
+## 📊 Project Stats
+
+* ⭐ Stars: `45`
+* 🍴 Forks: `37`
+* 👀 Views: `50+`
+* ⏱ Duration: `1.5 months`
+* 👤 Team: `Solo Project`
+* 📅 Year: `2024`
+* 🧪 Status: `In Progress`
+
+---
+
+## 🙌 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 📫 Contact
+
+Built by [Salman Sadiq](https://github.com/salmansadiq1015)
+Feel free to reach out for collaboration or feedback.
+
+```
+
+Let me know if you want to break this into separate documentation pages or deploy it as a GitHub Pages project site!
+```
